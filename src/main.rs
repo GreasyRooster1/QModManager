@@ -18,13 +18,16 @@ enum Game{
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 struct App {
-    game: Game
+    game: Game,
+
+    host_ip:String,
 }
 
 impl Default for App {
     fn default() -> Self {
         Self {
             game: Game::Minecraft,
+            host_ip: "10.0.0.0".to_string(),
         }
     }
 }
@@ -67,6 +70,8 @@ impl eframe::App for App {
 
                             line_break(ui);
 
+                            ui.label("Host IP:");
+                            ui.text_edit_singleline(&mut self.host_ip)
                         });
                     });
                 });
