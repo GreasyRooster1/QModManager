@@ -1,8 +1,15 @@
-use eframe::{egui, NativeOptions};
-use eframe::egui::{InnerResponse, Response, Ui};
+use eframe::{egui, NativeOptions, Theme};
+use eframe::egui::{InnerResponse, Response, ScrollArea, Ui};
+
+const WIDTH:f32  = 530.;
+const HEIGHT:f32  = 400.;
 
 fn main() {
-    let options = NativeOptions::default();
+    let options = NativeOptions {
+        viewport: egui::ViewportBuilder::default().with_inner_size([WIDTH, HEIGHT]),
+        default_theme: Theme::Dark,
+        ..Default::default()
+    };
     eframe::run_native(
         "QModManager",
         options,
@@ -124,7 +131,14 @@ impl eframe::App for App {
                 ui.group(|ui| {
                     ui.collapsing("Debug", |ui| {
                         ui.horizontal_wrapped(|ui| {
-                            ui.label("Debug")
+                            ui.vertical(|ui| {
+                                ui.label("Debug");
+                                ui.group(|ui| {
+                                    ScrollArea::vertical().show(ui, |ui| {
+                                        ui.label("Debug console")
+                                    });
+                                });
+                            });
                         });
                     });
                 });
