@@ -1,4 +1,5 @@
 use eframe::{egui, NativeOptions};
+use eframe::egui::{InnerResponse, Response, Ui};
 
 fn main() {
     let options = NativeOptions::default();
@@ -9,10 +10,23 @@ fn main() {
     ).unwrap();
 }
 
+#[derive(Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+enum Game{
+    Minecraft
+}
 
-#[derive(Default)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 struct App {
+    game: Game
+}
 
+impl Default for App {
+    fn default() -> Self {
+        Self {
+            game: Game::Minecraft,
+        }
+    }
 }
 
 impl App {
@@ -28,21 +42,49 @@ impl App {
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("QModManager");
+            create_centered_heading("QModManager",ui);
             ui.group(|ui| {
-                ui.vertical(|ui| {
-                    ui.label("Welcome to QModManager")
+                ui.horizontal(|ui| {
+                    ui.group(|ui| {
+                        ui.vertical(|ui| {
+                            ui.heading("Game Settings");
+                            ui.label("change settings about the game");
+
+                            ui.label("");
+
+                            egui::ComboBox::from_label("Select Game")
+                            .selected_text(format!("{0:?}",self.game))
+                            .show_ui(ui, |ui| {
+                                ui.selectable_value(&mut self.game, Game::Minecraft, "Minecraft");
+                            });
+
+                        });
+                    });
+                    ui.group(|ui| {
+                        ui.vertical(|ui| {
+                            ui.heading("Launch Settings");
+                            ui.label("change launcher/modpack settings");
+                            ui.label("")
+                        });
+                    });
+                });
+                ui.group(|ui| {
+                    ui.vertical_centered(|ui| {
+                        if ui.button("LAUNCH").clicked() {
+                            println!("launched")
+                        }
+                    });
                 });
             });
+
         });
     }
 }
 
-fn create_label<'a>(
-    title: &'a str
-) -> impl egui::Widget + 'a {
-    let label = format!("{title}:");
-    move |ui: &mut egui::Ui| {
-        ui.label(label)
-    }
+
+
+fn create_centered_heading(title: &str, ui: &mut Ui) -> InnerResponse<()> {
+    ui.vertical_centered(|ui|{
+        ui.heading(title);
+    })
 }
