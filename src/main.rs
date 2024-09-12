@@ -128,24 +128,28 @@ impl eframe::App for App {
                         }
                     });
                 });
-                ui.group(|ui| {
-                    ui.collapsing("Debug", |ui| {
-                        ui.horizontal_wrapped(|ui| {
-                            ui.vertical(|ui| {
-                                ui.label("Debug");
-                                ui.group(|ui| {
-                                    ScrollArea::vertical().show(ui, |ui| {
-                                        ui.label("Debug console")
-                                    });
-                                });
-                            });
-                        });
-                    });
-                });
+                //debug_group(ui);
             });
 
         });
     }
+}
+
+fn debug_group(ui: &mut Ui){
+    ui.group(|ui| {
+        ui.collapsing("Debug", |ui| {
+            ui.horizontal_wrapped(|ui| {
+                ui.vertical(|ui| {
+                    ui.label("Debug");
+                    ui.group(|ui| {
+                        ScrollArea::vertical().show(ui, |ui| {
+                            ui.label("Debug console")
+                        });
+                    });
+                });
+            });
+        });
+    });
 }
 
 fn line_break(ui: &mut Ui) -> Response {
