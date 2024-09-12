@@ -15,6 +15,9 @@ fn main() {
 enum Game{
     Minecraft
 }
+
+#[derive(Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 enum Modpack{
     ModTeam,
     Base
@@ -27,6 +30,12 @@ impl Modpack {
             Modpack::Base => "Base",
         }
     }
+    fn get_name(&self) -> &'static str {
+        match self {
+            Modpack::ModTeam => "Modded Team Pack",
+            Modpack::Base => "Base Pack",
+        }
+    }
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
@@ -35,6 +44,8 @@ struct App {
 
     host_ip:String,
     host_port:i32,
+
+    modpack: Modpack,
 }
 
 impl Default for App {
@@ -43,6 +54,7 @@ impl Default for App {
             game: Game::Minecraft,
             host_ip: "10.0.0.0".to_string(),
             host_port: 255,
+            modpack: Modpack::ModTeam,
         }
     }
 }
@@ -80,8 +92,8 @@ impl eframe::App for App {
                     });
                     ui.group(|ui| {
                         ui.vertical(|ui| {
-                            ui.heading("Launch Settings");
-                            ui.label("change launcher/modpack settings");
+                            ui.heading("Modpack Settings");
+                            ui.label("change modpack and server settings");
 
                             line_break(ui);
 
@@ -94,9 +106,11 @@ impl eframe::App for App {
                             line_break(ui);
 
                             egui::ComboBox::from_label("Modpack")
-                                .selected_text(format!("{0:?}",self.game))
+                                .selected_text(format!("{0:?}",self.modpack.get_name()))
                                 .show_ui(ui, |ui| {
-                                    ui.selectable_value(&mut self.game, Game::Minecraft, "Minecraft");
+                                    ui.selectable_value(&mut self.modpack, Modpack::ModTeam, Modpack::ModTeam.get_name());
+                                    ui.selectable_value(&mut self.modpack, Modpack::Base, Modpack::Base.get_name());
+
                                 });
                         });
                     });
