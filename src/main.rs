@@ -50,7 +50,7 @@ impl eframe::App for App {
                             ui.heading("Game Settings");
                             ui.label("change settings about the game");
 
-                            ui.label("");
+                            line_break(ui);
 
                             egui::ComboBox::from_label("Select Game")
                             .selected_text(format!("{0:?}",self.game))
@@ -64,7 +64,9 @@ impl eframe::App for App {
                         ui.vertical(|ui| {
                             ui.heading("Launch Settings");
                             ui.label("change launcher/modpack settings");
-                            ui.label("")
+
+                            line_break(ui);
+
                         });
                     });
                 });
@@ -81,7 +83,9 @@ impl eframe::App for App {
     }
 }
 
-
+fn line_break(ui: &mut Ui) -> Response {
+    ui.label("")
+}
 
 fn create_centered_heading(title: &str, ui: &mut Ui) -> InnerResponse<()> {
     ui.vertical_centered(|ui|{
