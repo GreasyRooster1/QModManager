@@ -110,7 +110,6 @@ impl eframe::App for App {
                                 .show_ui(ui, |ui| {
                                     ui.selectable_value(&mut self.modpack, Modpack::ModTeam, Modpack::ModTeam.get_name());
                                     ui.selectable_value(&mut self.modpack, Modpack::Base, Modpack::Base.get_name());
-
                                 });
                         });
                     });
@@ -120,6 +119,13 @@ impl eframe::App for App {
                         if ui.button("LAUNCH").clicked() {
                             println!("launched")
                         }
+                    });
+                });
+                ui.group(|ui| {
+                    ui.collapsing("Debug", |ui| {
+                        ui.horizontal_wrapped(|ui| {
+                            ui.label("Debug")
+                        });
                     });
                 });
             });
