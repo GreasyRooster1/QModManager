@@ -1,0 +1,8 @@
+[package]
+name = "QModManager"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eframe = "0.28.1"
+egui_glow = "0.28.1"
