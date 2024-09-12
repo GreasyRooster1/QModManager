@@ -15,12 +15,26 @@ fn main() {
 enum Game{
     Minecraft
 }
+enum Modpack{
+    ModTeam,
+    Base
+}
+
+impl Modpack {
+    fn get_server_identifier(&self) -> &'static str {
+        match self {
+            Modpack::ModTeam => "ModTeam",
+            Modpack::Base => "Base",
+        }
+    }
+}
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 struct App {
     game: Game,
 
     host_ip:String,
+    host_port:i32,
 }
 
 impl Default for App {
@@ -28,6 +42,7 @@ impl Default for App {
         Self {
             game: Game::Minecraft,
             host_ip: "10.0.0.0".to_string(),
+            host_port: 255,
         }
     }
 }
@@ -71,7 +86,18 @@ impl eframe::App for App {
                             line_break(ui);
 
                             ui.label("Host IP:");
-                            ui.text_edit_singleline(&mut self.host_ip)
+                            ui.text_edit_singleline(&mut self.host_ip);
+
+                            ui.label("Host Port:");
+                            ui.add(egui::DragValue::new(&mut self.host_port).speed(2));
+
+                            line_break(ui);
+
+                            egui::ComboBox::from_label("Modpack")
+                                .selected_text(format!("{0:?}",self.game))
+                                .show_ui(ui, |ui| {
+                                    ui.selectable_value(&mut self.game, Game::Minecraft, "Minecraft");
+                                });
                         });
                     });
                 });
