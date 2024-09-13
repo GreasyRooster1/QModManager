@@ -20,9 +20,8 @@ impl LaunchAbortReason {
     }
 }
 
-pub fn verify_fml_install() -> bool{
-    //todo
-    false
+pub fn verify_fml_install(minecraft_path: &Path) -> bool{
+    let fml_path = minecraft_path.join("fml");
 }
 
 pub fn verify_minecraft_install() -> Result<String, ()> {
@@ -40,16 +39,20 @@ pub fn verify_minecraft_install() -> Result<String, ()> {
 }
 
 pub fn preform_launch_checks(app:&mut App){
-    match verify_minecraft_install(){
+    let minecraft_path = match verify_minecraft_install(){
         Ok(path) => {
             info(format!("Detected Minecraft @ {0}",path).as_str(), app);
+            Path::new(&path)
         }
         Err(_) => {
             error("Minecraft is not installed!", app);
             abort_launch(app, LaunchAbortReason::MinecraftMissing);
+            return;
         }
-    }
-    if !verify_fml_install(){
+    };
+
+
+    if !verify_fml_install(minecraft_path){
         error("Forge mod loader is not installed!",app);
         abort_launch(app,LaunchAbortReason::FMLMissing);
         return;
