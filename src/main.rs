@@ -3,6 +3,7 @@ mod launch;
 
 use eframe::{egui, NativeOptions, Theme};
 use eframe::egui::{CentralPanel, DragValue, InnerResponse, Response, ScrollArea, SidePanel, TopBottomPanel, Ui};
+use crate::launch::check_fml_is_installed;
 use crate::log::info;
 
 const WIDTH:f32  = 800.;
@@ -152,6 +153,9 @@ fn left_panel(ui: &mut Ui, app: &mut App){
                 ui.selectable_value(&mut app.game, Game::Minecraft, "Minecraft");
             });
 
+        if ui.button("Check Forge Installation").clicked() {
+            check_fml_is_installed(app);
+        }
     });
 }
 
