@@ -2,9 +2,9 @@ mod log;
 mod launch;
 
 use eframe::{egui, NativeOptions, Theme};
-use eframe::egui::{CentralPanel, DragValue, InnerResponse, Response, ScrollArea, SidePanel, TopBottomPanel, Ui};
-use crate::launch::check_fml_is_installed;
-use crate::log::info;
+use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerResponse, PopupCloseBehavior, Response, ScrollArea, SidePanel, TopBottomPanel, Ui};
+use crate::launch::{preform_launch_checks, verify_fml_install};
+use crate::log::{error, info};
 
 const WIDTH:f32  = 800.;
 const HEIGHT:f32  = 400.;
@@ -154,7 +154,10 @@ fn left_panel(ui: &mut Ui, app: &mut App){
             });
 
         if ui.button("Check Forge Installation").clicked() {
-            check_fml_is_installed(app);
+            match verify_fml_install() {
+                true => info("FML is installed",app),
+                false => error("could not find FML",app),
+            }
         }
     });
 }
@@ -194,6 +197,7 @@ fn bottom_panel(ui: &mut Ui, app: &mut App){
     ui.vertical_centered(|ui| {
         if ui.button("LAUNCH").clicked() {
             info("Launch button clicked",app);
+            preform_launch_checks(app);
         }
     });
 }
