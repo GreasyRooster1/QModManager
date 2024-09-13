@@ -62,6 +62,9 @@ struct App {
 
     host_ip:String,
     host_port:i32,
+
+    auth_username:String,
+    auth_password:String,
     
     debug_console_content:String,
 }
@@ -75,6 +78,8 @@ impl Default for App {
             forge_version: "47.3.10".to_string(),
             host_ip: "10.0.0.0".to_string(),
             host_port: 255,
+            auth_username: "".to_string(),
+            auth_password: "Mine2021!".to_string(),
             debug_console_content: "".to_string(),
         }
     }
@@ -158,12 +163,19 @@ fn left_panel(ui: &mut Ui, app: &mut App){
                 ui.selectable_value(&mut app.game, Game::Minecraft, "Minecraft");
             });
 
-        // if ui.button("Check Forge Installation").clicked() {
-        //     match verify_fml_install() {
-        //         true => info("FML is installed",app),
-        //         false => error("could not find FML",app),
-        //     }
-        // }
+        line_break(ui);
+
+        ui.label("Minecraft Version");
+        ui.text_edit_singleline(&mut app.minecraft_version);
+        ui.label("Forge Version");
+        ui.text_edit_singleline(&mut app.forge_version);
+
+        line_break(ui);
+
+        ui.label("Username");
+        ui.text_edit_singleline(&mut app.auth_username);
+        ui.label("Password");
+        ui.text_edit_singleline(&mut app.auth_password);
     });
 }
 
@@ -212,6 +224,8 @@ fn bottom_panel(ui: &mut Ui, app: &mut App){
 }
 
 fn line_break(ui: &mut Ui) -> Response {
+    ui.label("");
+    ui.separator();
     ui.label("")
 }
 
