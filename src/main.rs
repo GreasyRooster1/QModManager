@@ -1,8 +1,11 @@
+mod log;
+
 use eframe::{egui, NativeOptions, Theme};
 use eframe::egui::{CentralPanel, DragValue, InnerResponse, Response, ScrollArea, SidePanel, TopBottomPanel, Ui};
 
 const WIDTH:f32  = 800.;
 const HEIGHT:f32  = 400.;
+
 
 fn main() {
     let options = NativeOptions {
