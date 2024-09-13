@@ -3,6 +3,7 @@ mod launch;
 
 use eframe::{egui, NativeOptions, Theme};
 use eframe::egui::{CentralPanel, DragValue, InnerResponse, Response, ScrollArea, SidePanel, TopBottomPanel, Ui};
+use crate::log::info;
 
 const WIDTH:f32  = 800.;
 const HEIGHT:f32  = 400.;
@@ -188,7 +189,7 @@ fn right_panel(ui: &mut Ui, app: &mut App){
 fn bottom_panel(ui: &mut Ui, app: &mut App){
     ui.vertical_centered(|ui| {
         if ui.button("LAUNCH").clicked() {
-            println!("launched")
+            info("Launch button clicked",app);
         }
     });
 }

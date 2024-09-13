@@ -20,20 +20,20 @@ impl LogLevel{
 }
 
 pub fn log_message(message: String, level: LogLevel,app: &mut App){
-    let date = Local::now().format("%Y-%m-%d][%H:%M:%S");
-    let content = format!("{0} : [{1}] - {2}", date, level.as_str(), message);
+    let date = Local::now().format("%Y-%m-%d %H:%M:%S");
+    let content = format!("{0} : [{1}] - {2}\n", date, level.as_str(), message);
     app.debug_console_content.push_str(content.as_str());
 }
 
-pub fn info(message: String,app: &mut App){
-    log_message(message, LogLevel::Info,app);
+pub fn info(message: &str, app: &mut App){
+    log_message(message.to_string(), LogLevel::Info,app);
 }
-pub fn warn(message: String,app: &mut App){
-    log_message(message, LogLevel::Warn,app);
+pub fn warn(message: &str,app: &mut App){
+    log_message(message.to_string(), LogLevel::Warn,app);
 }
-pub fn error(message: String,app: &mut App){
-    log_message(message, LogLevel::Error,app);
+pub fn error(message: &str,app: &mut App){
+    log_message(message.to_string(), LogLevel::Error,app);
 }
-pub fn debug(message: String,app: &mut App){
-    log_message(message, LogLevel::Debug,app);
+pub fn debug(message: &str,app: &mut App){
+    log_message(message.to_string(), LogLevel::Debug,app);
 }
