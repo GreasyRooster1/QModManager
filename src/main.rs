@@ -79,61 +79,119 @@ impl App {
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            create_centered_heading("QModManager",ui);
-            ui.group(|ui| {
-                ui.horizontal(|ui| {
-                    ui.group(|ui| {
-                        ui.vertical(|ui| {
-                            ui.heading("Game Settings");
-                            ui.label("change settings about the game");
-
-                            line_break(ui);
-
-                            egui::ComboBox::from_label("Select Game")
-                            .selected_text(format!("{0:?}",self.game))
-                            .show_ui(ui, |ui| {
-                                ui.selectable_value(&mut self.game, Game::Minecraft, "Minecraft");
-                            });
-
-                        });
-                    });
-                    ui.group(|ui| {
-                        ui.vertical(|ui| {
-                            ui.heading("Modpack Settings");
-                            ui.label("change modpack and server settings");
-
-                            line_break(ui);
-
-                            ui.label("Host IP:");
-                            ui.text_edit_singleline(&mut self.host_ip);
-
-                            ui.label("Host Port:");
-                            ui.add(egui::DragValue::new(&mut self.host_port).speed(2));
-
-                            line_break(ui);
-
-                            egui::ComboBox::from_label("Modpack")
-                                .selected_text(format!("{0:?}",self.modpack.get_name()))
-                                .show_ui(ui, |ui| {
-                                    ui.selectable_value(&mut self.modpack, Modpack::ModTeam, Modpack::ModTeam.get_name());
-                                    ui.selectable_value(&mut self.modpack, Modpack::Base, Modpack::Base.get_name());
-                                });
-                        });
+            egui::TopBottomPanel::top("top_panel")
+                .resizable(true)
+                .min_height(32.0)
+                .show_inside(ui, |ui| {
+                    egui::ScrollArea::vertical().show(ui, |ui| {
+                        top_panel(ui,self);
                     });
                 });
-                ui.group(|ui| {
+
+            egui::SidePanel::left("left_panel")
+                .resizable(true)
+                .default_width(150.0)
+                .width_range(80.0..=200.0)
+                .show_inside(ui, |ui| {
+                    egui::ScrollArea::vertical().show(ui, |ui| {
+                        left_panel(ui,self);
+                    });
+                });
+
+            egui::SidePanel::right("right_panel")
+                .resizable(true)
+                .default_width(150.0)
+                .width_range(80.0..=200.0)
+                .show_inside(ui, |ui| {
+                    egui::ScrollArea::vertical().show(ui, |ui| {
+                        right_panel(ui,self);
+                    });
+                });
+
+            egui::TopBottomPanel::bottom("bottom_panel")
+                .resizable(false)
+                .min_height(0.0)
+                .show_inside(ui, |ui| {
                     ui.vertical_centered(|ui| {
-                        if ui.button("LAUNCH").clicked() {
-                            println!("launched")
-                        }
+                        bottom_panel(ui,self);
                     });
                 });
-                //debug_group(ui);
+
+            egui::CentralPanel::default().show_inside(ui, |ui| {
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    center_panel(ui,self);
+                });
             });
 
         });
     }
 }
+
+fn top_panel(ui: &mut Ui, app: &mut App){
+    create_centered_heading("QModManager",ui);
+}
+
+fn left_panel(ui: &mut Ui, app: &mut App){
+    ui.horizontal(|ui| {
+        ui.group(|ui| {
+            ui.vertical(|ui| {
+                ui.heading("Game Settings");
+                ui.label("change settings about the game");
+
+                line_break(ui);
+
+                egui::ComboBox::from_label("Select Game")
+                    .selected_text(format!("{0:?}",app.game))
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(&mut app.game, Game::Minecraft, "Minecraft");
+                    });
+
+            });
+        });
+
+    });
+}
+
+fn center_panel(ui: &mut Ui, app: &mut App){
+
+}
+
+fn right_panel(ui: &mut Ui, app: &mut App){
+    ui.group(|ui| {
+        ui.vertical(|ui| {
+            ui.heading("Modpack Settings");
+            ui.label("change modpack and server settings");
+
+            line_break(ui);
+
+            ui.label("Host IP:");
+            ui.text_edit_singleline(&mut app.host_ip);
+
+            ui.label("Host Port:");
+            ui.add(egui::DragValue::new(&mut app.host_port).speed(2));
+
+            line_break(ui);
+
+            egui::ComboBox::from_label("Modpack")
+                .selected_text(format!("{0:?}",app.modpack.get_name()))
+                .show_ui(ui, |ui| {
+                    ui.selectable_value(&mut app.modpack, Modpack::ModTeam, Modpack::ModTeam.get_name());
+                    ui.selectable_value(&mut app.modpack, Modpack::Base, Modpack::Base.get_name());
+                });
+        });
+    });
+}
+
+fn bottom_panel(ui: &mut Ui, app: &mut App){
+    ui.group(|ui| {
+        ui.vertical_centered(|ui| {
+            if ui.button("LAUNCH").clicked() {
+                println!("launched")
+            }
+        });
+    });
+}
+
 
 fn debug_group(ui: &mut Ui){
     ui.group(|ui| {
