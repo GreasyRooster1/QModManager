@@ -1,5 +1,7 @@
+use std::path::Path;
+use directories::{BaseDirs, ProjectDirs};
 use crate::App;
-use crate::log::{error, warn};
+use crate::log::{error, info, warn};
 
 
 enum LaunchAbortReason{
@@ -23,16 +25,29 @@ pub fn verify_fml_install() -> bool{
     false
 }
 
-pub fn verify_minecraft_install() -> bool{
-    //todo
-    false
+pub fn verify_minecraft_install() -> Result<String, ()> {
+    match BaseDirs::new() {
+        None => Err(()),
+        Some(base_dirs) => {
+            let str = format!("{0}\\.minecraft", base_dirs.config_dir().to_str().unwrap());
+            let minecraft_path = Path::new(&str);
+            match minecraft_path.exists() {
+                true => Ok(minecraft_path.to_str().unwrap().to_string()),
+                false => Err(())
+            }
+        }
+    }
 }
 
 pub fn preform_launch_checks(app:&mut App){
-    if !verify_minecraft_install(){
-        error("Minecraft is not installed!",app);
-        abort_launch(app,LaunchAbortReason::MinecraftMissing);
-        return;
+    match verify_minecraft_install(){
+        Ok(path) => {
+            info(format!("Detected Minecraft @ {0}",path).as_str(), app);
+        }
+        Err(_) => {
+            error("Minecraft is not installed!", app);
+            abort_launch(app, LaunchAbortReason::MinecraftMissing);
+        }
     }
     if !verify_fml_install(){
         error("Forge mod loader is not installed!",app);
