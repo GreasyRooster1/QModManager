@@ -1,5 +1,6 @@
 mod log;
 mod launch;
+mod auth;
 
 use eframe::{egui, NativeOptions, Theme};
 use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerResponse, PopupCloseBehavior, Response, ScrollArea, SidePanel, TopBottomPanel, Ui};
