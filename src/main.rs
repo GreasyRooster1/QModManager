@@ -53,6 +53,8 @@ struct App {
     host_port:i32,
 
     modpack: Modpack,
+    
+    debug_console_content:String,
 }
 
 impl Default for App {
@@ -62,6 +64,7 @@ impl Default for App {
             host_ip: "10.0.0.0".to_string(),
             host_port: 255,
             modpack: Modpack::ModTeam,
+            debug_console_content: "".to_string(),
         }
     }
 }
@@ -148,7 +151,7 @@ fn left_panel(ui: &mut Ui, app: &mut App){
 }
 
 fn center_panel(ui: &mut Ui, app: &mut App){
-
+    ui.label(format!("{}",app.debug_console_content));
 }
 
 fn right_panel(ui: &mut Ui, app: &mut App){
@@ -183,24 +186,6 @@ fn bottom_panel(ui: &mut Ui, app: &mut App){
         if ui.button("LAUNCH").clicked() {
             println!("launched")
         }
-    });
-}
-
-
-fn debug_group(ui: &mut Ui){
-    ui.group(|ui| {
-        ui.collapsing("Debug", |ui| {
-            ui.horizontal_wrapped(|ui| {
-                ui.vertical(|ui| {
-                    ui.label("Debug");
-                    ui.group(|ui| {
-                        ScrollArea::vertical().show(ui, |ui| {
-                            ui.label("Debug console")
-                        });
-                    });
-                });
-            });
-        });
     });
 }
 
