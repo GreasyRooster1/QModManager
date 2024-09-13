@@ -3,7 +3,7 @@ mod launch;
 
 use eframe::{egui, NativeOptions, Theme};
 use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerResponse, PopupCloseBehavior, Response, ScrollArea, SidePanel, TopBottomPanel, Ui};
-use crate::launch::{preform_launch_checks, verify_fml_install};
+use crate::launch::{preform_launch_checks, verify_fml_install, LaunchSettings};
 use crate::log::{error, info};
 
 const WIDTH:f32  = 800.;
@@ -55,10 +55,12 @@ impl Modpack {
 struct App {
     game: Game,
 
+    modpack: Modpack,
+    minecraft_version:String,
+    forge_version:String,
+
     host_ip:String,
     host_port:i32,
-
-    modpack: Modpack,
     
     debug_console_content:String,
 }
@@ -67,9 +69,11 @@ impl Default for App {
     fn default() -> Self {
         Self {
             game: Game::Minecraft,
+            modpack: Modpack::ModTeam,
+            minecraft_version: "1.20.1".to_string(),
+            forge_version: "47.3.10".to_string(),
             host_ip: "10.0.0.0".to_string(),
             host_port: 255,
-            modpack: Modpack::ModTeam,
             debug_console_content: "".to_string(),
         }
     }
@@ -197,7 +201,11 @@ fn bottom_panel(ui: &mut Ui, app: &mut App){
     ui.vertical_centered(|ui| {
         if ui.button("LAUNCH").clicked() {
             info("Launch button clicked",app);
-            preform_launch_checks(app);
+            let launch_settings = LaunchSettings{
+                forge_version:app.forge_version.clone(),
+                minecraft_version:app.minecraft_version.clone(),
+            };
+            preform_launch_checks(app,launch_settings);
         }
     });
 }

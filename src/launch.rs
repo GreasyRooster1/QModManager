@@ -3,6 +3,10 @@ use directories::{BaseDirs, ProjectDirs};
 use crate::App;
 use crate::log::{error, info, warn};
 
+pub struct LaunchSettings{
+    pub(crate) forge_version: String,
+    pub(crate) minecraft_version: String,
+}
 
 enum LaunchAbortReason{
     MinecraftMissing,
@@ -20,8 +24,9 @@ impl LaunchAbortReason {
     }
 }
 
-pub fn verify_fml_install(minecraft_path: &Path) -> bool{
-    let fml_path = minecraft_path.join("fml");
+pub fn verify_fml_install(minecraft_path: &Path, launch_settings: LaunchSettings) -> bool{
+    //let fml_path = minecraft_path.join("fml");
+    false
 }
 
 pub fn verify_minecraft_install() -> Result<String, ()> {
@@ -38,7 +43,7 @@ pub fn verify_minecraft_install() -> Result<String, ()> {
     }
 }
 
-pub fn preform_launch_checks(app:&mut App){
+pub fn preform_launch_checks(app:&mut App,launch_settings: LaunchSettings){
     let minecraft_path = match verify_minecraft_install(){
         Ok(path) => {
             info(format!("Detected Minecraft @ {0}",path).as_str(), app);
@@ -52,7 +57,7 @@ pub fn preform_launch_checks(app:&mut App){
     };
 
 
-    if !verify_fml_install(minecraft_path){
+    if !verify_fml_install(minecraft_path,launch_settings){
         error("Forge mod loader is not installed!",app);
         abort_launch(app,LaunchAbortReason::FMLMissing);
         return;
