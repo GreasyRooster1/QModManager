@@ -68,7 +68,7 @@ pub fn preform_launch_checks(app:&mut App,launch_settings: LaunchSettings){
         }
         Err(_) => {
             error("FML is not installed!", app);
-            abort_launch(app, LaunchAbortReason::MinecraftMissing);
+            abort_launch(app, LaunchAbortReason::FMLMissing);
             return;
         }
     };
