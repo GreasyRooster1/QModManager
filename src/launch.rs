@@ -1,11 +1,14 @@
 use std::path::Path;
 use directories::{BaseDirs, ProjectDirs};
-use crate::App;
+use crate::{App, Modpack};
 use crate::log::{error, info, warn};
+use crate::pack::download_modpack;
 
 pub struct LaunchSettings{
     pub(crate) forge_version: String,
     pub(crate) minecraft_version: String,
+
+    pub(crate) modpack: Modpack,
 }
 
 
@@ -97,13 +100,15 @@ pub fn preform_launch_checks(app:&mut App,launch_settings: &LaunchSettings)->Res
         }
     };
 
+    info("Launch checks passed successfully",app);
+
     Ok(Path::new(&fml_path).join(fml_jar).display().to_string())
 }
 
 pub fn launch(app:&mut App,launch_settings: &LaunchSettings){
     match preform_launch_checks(app,launch_settings) {
         Ok(_) => {
-            //todo
+            download_modpack(app,launch_settings.modpack.clone())
         }
         Err(_) => {
             error("Launch checks failed", app);

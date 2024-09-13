@@ -1,6 +1,7 @@
 mod log;
 mod launch;
 mod auth;
+mod pack;
 
 use eframe::{egui, NativeOptions, Theme};
 use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerResponse, PopupCloseBehavior, Response, ScrollArea, SidePanel, TopBottomPanel, Ui};
@@ -30,7 +31,7 @@ enum Game{
     Minecraft
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq,Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 enum Modpack{
     ModTeam,
@@ -217,6 +218,7 @@ fn bottom_panel(ui: &mut Ui, app: &mut App){
             let launch_settings = LaunchSettings{
                 forge_version:app.forge_version.clone(),
                 minecraft_version:app.minecraft_version.clone(),
+                modpack: app.modpack.clone(),
             };
             launch(app,&launch_settings);
         }
