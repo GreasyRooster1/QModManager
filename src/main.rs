@@ -3,7 +3,7 @@ mod launch;
 
 use eframe::{egui, NativeOptions, Theme};
 use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerResponse, PopupCloseBehavior, Response, ScrollArea, SidePanel, TopBottomPanel, Ui};
-use crate::launch::{preform_launch_checks, verify_fml_install, LaunchSettings};
+use crate::launch::{preform_launch_checks, verify_fml_folder, LaunchSettings};
 use crate::log::{error, info};
 
 const WIDTH:f32  = 800.;
