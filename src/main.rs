@@ -157,12 +157,12 @@ fn left_panel(ui: &mut Ui, app: &mut App){
                 ui.selectable_value(&mut app.game, Game::Minecraft, "Minecraft");
             });
 
-        if ui.button("Check Forge Installation").clicked() {
-            match verify_fml_install() {
-                true => info("FML is installed",app),
-                false => error("could not find FML",app),
-            }
-        }
+        // if ui.button("Check Forge Installation").clicked() {
+        //     match verify_fml_install() {
+        //         true => info("FML is installed",app),
+        //         false => error("could not find FML",app),
+        //     }
+        // }
     });
 }
 

@@ -24,9 +24,13 @@ impl LaunchAbortReason {
     }
 }
 
-pub fn verify_fml_install(minecraft_path: &Path, launch_settings: LaunchSettings) -> bool{
-    //let fml_path = minecraft_path.join("fml");
-    false
+pub fn verify_fml_install(minecraft_path: &Path, launch_settings: LaunchSettings) -> Result<String, ()>{
+    let forge_handle = format!("{0}-forge-{1}",launch_settings.minecraft_version,launch_settings.forge_version);
+    let fml_path = minecraft_path.join("versions").join(forge_handle);
+    match fml_path.exists() {
+        true => Ok(fml_path.to_str().unwrap().to_string()),
+        false => Err(())
+    }
 }
 
 pub fn verify_minecraft_install() -> Result<String, ()> {
@@ -47,7 +51,7 @@ pub fn preform_launch_checks(app:&mut App,launch_settings: LaunchSettings){
     let minecraft_path = match verify_minecraft_install(){
         Ok(path) => {
             info(format!("Detected Minecraft @ {0}",path).as_str(), app);
-            Path::new(&path)
+            path
         }
         Err(_) => {
             error("Minecraft is not installed!", app);
@@ -57,11 +61,17 @@ pub fn preform_launch_checks(app:&mut App,launch_settings: LaunchSettings){
     };
 
 
-    if !verify_fml_install(minecraft_path,launch_settings){
-        error("Forge mod loader is not installed!",app);
-        abort_launch(app,LaunchAbortReason::FMLMissing);
-        return;
-    }
+    let fml_path = match verify_fml_install(Path::new(&minecraft_path), launch_settings){
+        Ok(path) => {
+            info(format!("Detected FML @ {0}",path).as_str(), app);
+            path
+        }
+        Err(_) => {
+            error("FML is not installed!", app);
+            abort_launch(app, LaunchAbortReason::MinecraftMissing);
+            return;
+        }
+    };
 
 
 }
