@@ -1,4 +1,5 @@
 mod log;
+mod launch;
 
 use eframe::{egui, NativeOptions, Theme};
 use eframe::egui::{CentralPanel, DragValue, InnerResponse, Response, ScrollArea, SidePanel, TopBottomPanel, Ui};
