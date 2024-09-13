@@ -59,7 +59,7 @@ pub fn verify_fml_installed_correctly(fml_path: &Path, launch_settings: &LaunchS
     }
 }
 
-pub fn preform_launch_checks(app:&mut App,launch_settings: LaunchSettings){
+pub fn preform_launch_checks(app:&mut App,launch_settings: &LaunchSettings)->Result<String,()>{
     let minecraft_path = match verify_minecraft_install(){
         Ok(path) => {
             info(format!("Detected Minecraft @ {0}",path).as_str(), app);
@@ -68,7 +68,7 @@ pub fn preform_launch_checks(app:&mut App,launch_settings: LaunchSettings){
         Err(_) => {
             error("Minecraft is not installed!", app);
             abort_launch(app, LaunchAbortReason::MinecraftMissing);
-            return;
+            return Err(());
         }
     };
 
@@ -81,7 +81,7 @@ pub fn preform_launch_checks(app:&mut App,launch_settings: LaunchSettings){
         Err(_) => {
             error("FML is not installed!", app);
             abort_launch(app, LaunchAbortReason::FMLMissing);
-            return;
+            return Err(());
         }
     };
 
@@ -93,11 +93,22 @@ pub fn preform_launch_checks(app:&mut App,launch_settings: LaunchSettings){
         Err(_) => {
             error("You need to launch minecraft to install forge", app);
             abort_launch(app, LaunchAbortReason::FMLMalformed);
-            return;
+            return Err(());
         }
     };
 
+    Ok(Path::new(&fml_path).join(fml_jar).display().to_string())
+}
 
+pub fn launch(app:&mut App,launch_settings: &LaunchSettings){
+    match preform_launch_checks(app,launch_settings) {
+        Ok(_) => {
+            //todo
+        }
+        Err(_) => {
+            error("Launch checks failed", app);
+        }
+    }
 }
 
 pub fn abort_launch(app:&mut App,reason: LaunchAbortReason){

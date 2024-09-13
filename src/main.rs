@@ -4,7 +4,7 @@ mod auth;
 
 use eframe::{egui, NativeOptions, Theme};
 use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerResponse, PopupCloseBehavior, Response, ScrollArea, SidePanel, TopBottomPanel, Ui};
-use crate::launch::{preform_launch_checks, verify_fml_folder, LaunchSettings};
+use crate::launch::{launch, preform_launch_checks, verify_fml_folder, LaunchSettings};
 use crate::log::{error, info};
 
 const WIDTH:f32  = 800.;
@@ -206,7 +206,7 @@ fn bottom_panel(ui: &mut Ui, app: &mut App){
                 forge_version:app.forge_version.clone(),
                 minecraft_version:app.minecraft_version.clone(),
             };
-            preform_launch_checks(app,launch_settings);
+            launch(app,&launch_settings);
         }
     });
 }
