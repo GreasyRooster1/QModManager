@@ -176,7 +176,9 @@ fn left_panel(ui: &mut Ui, app: &mut App){
         ui.label("Username");
         ui.text_edit_singleline(&mut app.auth_username);
         ui.label("Password");
-        ui.text_edit_singleline(&mut app.auth_password);
+        ui.add(
+            egui::TextEdit::singleline(&mut app.auth_password).password(true),
+        );
     });
 }
 
