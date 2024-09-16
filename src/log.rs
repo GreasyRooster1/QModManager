@@ -1,5 +1,6 @@
 use crate::App;
 use chrono::Local;
+use eframe::egui::Color32;
 
 pub enum LogLevel{
     Info,

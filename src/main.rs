@@ -61,6 +61,8 @@ struct App {
     minecraft_version:String,
     forge_version:String,
 
+    is_cracked:bool,
+
     host_ip:String,
     host_port:i32,
 
@@ -77,6 +79,7 @@ impl Default for App {
             modpack: Modpack::ModTeam,
             minecraft_version: "1.20.1".to_string(),
             forge_version: "47.3.10".to_string(),
+            is_cracked: false,
             host_ip: "10.0.0.0".to_string(),
             host_port: 255,
             auth_username: "".to_string(),
@@ -177,8 +180,10 @@ fn left_panel(ui: &mut Ui, app: &mut App){
         ui.text_edit_singleline(&mut app.auth_username);
         ui.label("Password");
         ui.add(
-            egui::TextEdit::singleline(&mut app.auth_password).password(true),
+            egui::TextEdit::singleline(&mut app.auth_password).password(true).interactive(!app.is_cracked),
         );
+
+        ui.checkbox(&mut app.is_cracked,"Is Cracked?")
     });
 }
 
