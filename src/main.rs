@@ -3,9 +3,10 @@ mod launch;
 mod auth;
 mod pack;
 
+use std::process::Command;
 use eframe::{egui, NativeOptions, Theme};
 use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerResponse, PopupCloseBehavior, Response, ScrollArea, SidePanel, TopBottomPanel, Ui};
-use crate::launch::{launch, preform_launch_checks, verify_fml_folder, LaunchSettings};
+use crate::launch::{launch, preform_launch_checks, verify_fml_folder, verify_minecraft_install, LaunchSettings};
 use crate::log::{error, info};
 
 const WIDTH:f32  = 800.;
@@ -208,6 +209,13 @@ fn right_panel(ui: &mut Ui, app: &mut App){
                 ui.selectable_value(&mut app.modpack, Modpack::ModTeam, Modpack::ModTeam.get_name());
                 ui.selectable_value(&mut app.modpack, Modpack::Base, Modpack::Base.get_name());
             });
+
+        if ui.button("Open Game Folder").clicked(){
+            Command::new( "explorer" )
+                .arg(verify_minecraft_install().unwrap())
+                .spawn( )
+                .unwrap( );
+        }
     });
 }
 
