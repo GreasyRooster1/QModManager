@@ -11,6 +11,10 @@ pub struct LaunchSettings{
     pub(crate) minecraft_version: String,
 
     pub(crate) modpack: Modpack,
+
+    pub(crate) is_cracked:bool,
+    pub(crate) auth_username:String,
+    pub(crate) auth_password:String,
 }
 
 

@@ -9,8 +9,8 @@ use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerRespons
 use crate::launch::{launch, preform_launch_checks, verify_fml_folder, verify_minecraft_install, LaunchSettings};
 use crate::log::{error, info};
 
-const WIDTH:f32  = 800.;
-const HEIGHT:f32  = 400.;
+const WIDTH:f32  = 1000.;
+const HEIGHT:f32  = 700.;
 
 
 fn main() {
@@ -62,6 +62,8 @@ struct App {
     minecraft_version:String,
     forge_version:String,
 
+    is_cracked:bool,
+
     host_ip:String,
     host_port:i32,
 
@@ -78,6 +80,7 @@ impl Default for App {
             modpack: Modpack::ModTeam,
             minecraft_version: "1.20.1".to_string(),
             forge_version: "47.3.10".to_string(),
+            is_cracked: false,
             host_ip: "10.0.0.0".to_string(),
             host_port: 255,
             auth_username: "".to_string(),
@@ -177,7 +180,11 @@ fn left_panel(ui: &mut Ui, app: &mut App){
         ui.label("Username");
         ui.text_edit_singleline(&mut app.auth_username);
         ui.label("Password");
-        ui.text_edit_singleline(&mut app.auth_password);
+        ui.add(
+            egui::TextEdit::singleline(&mut app.auth_password).password(true).interactive(!app.is_cracked),
+        );
+
+        ui.checkbox(&mut app.is_cracked,"Is Cracked?")
     });
 }
 
@@ -227,6 +234,9 @@ fn bottom_panel(ui: &mut Ui, app: &mut App){
                 forge_version:app.forge_version.clone(),
                 minecraft_version:app.minecraft_version.clone(),
                 modpack: app.modpack.clone(),
+                is_cracked:app.is_cracked.clone(),
+                auth_username: app.auth_username.clone(),
+                auth_password: app.auth_password.clone(),
             };
             launch(app,&launch_settings);
         }
