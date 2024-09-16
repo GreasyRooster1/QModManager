@@ -8,8 +8,8 @@ use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerRespons
 use crate::launch::{launch, preform_launch_checks, verify_fml_folder, LaunchSettings};
 use crate::log::{error, info};
 
-const WIDTH:f32  = 800.;
-const HEIGHT:f32  = 400.;
+const WIDTH:f32  = 1000.;
+const HEIGHT:f32  = 700.;
 
 
 fn main() {
@@ -226,6 +226,9 @@ fn bottom_panel(ui: &mut Ui, app: &mut App){
                 forge_version:app.forge_version.clone(),
                 minecraft_version:app.minecraft_version.clone(),
                 modpack: app.modpack.clone(),
+                is_cracked:app.is_cracked.clone(),
+                auth_username: app.auth_username.clone(),
+                auth_password: app.auth_password.clone(),
             };
             launch(app,&launch_settings);
         }
