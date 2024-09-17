@@ -8,6 +8,7 @@ use eframe::{egui, NativeOptions, Theme};
 use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerResponse, PopupCloseBehavior, Response, ScrollArea, SidePanel, TopBottomPanel, Ui};
 use crate::launch::{launch, preform_launch_checks, verify_fml_folder, verify_minecraft_install, LaunchSettings};
 use crate::log::{error, info};
+use crate::pack::download_modpack;
 
 const WIDTH:f32  = 1000.;
 const HEIGHT:f32  = 700.;
@@ -81,8 +82,8 @@ impl Default for App {
             minecraft_version: "1.20.1".to_string(),
             forge_version: "47.3.10".to_string(),
             is_cracked: false,
-            host_ip: "10.0.0.0".to_string(),
-            host_port: 255,
+            host_ip: "127.0.0.1".to_string(),
+            host_port: 7878,
             auth_username: "".to_string(),
             auth_password: "Mine2021!".to_string(),
             debug_console_content: "".to_string(),
@@ -102,7 +103,7 @@ impl App {
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
+        CentralPanel::default().show(ctx, |ui| {
             TopBottomPanel::top("top_panel")
                 .resizable(false)
                 .min_height(32.0)
@@ -217,11 +218,19 @@ fn right_panel(ui: &mut Ui, app: &mut App){
                 ui.selectable_value(&mut app.modpack, Modpack::Base, Modpack::Base.get_name());
             });
 
+        line_break(ui);
+
+        ui.label("Advanced Options");
+
         if ui.button("Open Game Folder").clicked(){
             Command::new( "explorer" )
                 .arg(verify_minecraft_install().unwrap())
                 .spawn( )
                 .unwrap( );
+        }
+
+        if ui.button("Download Modpack Raw").clicked(){
+            download_modpack();
         }
     });
 }
