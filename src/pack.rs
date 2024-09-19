@@ -1,13 +1,16 @@
+use std::error::Error;
 use std::fmt::format;
-use std::fs;
-use std::io::Write;
-use std::path::Path;
+use std::{fs, io};
+use std::io::{Cursor, Write};
+use std::path::{Path, PathBuf};
 use crate::{App, Modpack};
 use crate::launch::LaunchSettings;
 use crate::log::{error, info};
 use reqwest::blocking;
+use zip_extract::ZipExtractError;
 
 const TEMP_PATH:&str = "tmp";
+const TEMP_MOD_PATH:&str = "tmp\\mod";
 
 pub fn download_modpack(app:&mut App, modpack: Modpack, minecraft_path: String,launch_settings: &LaunchSettings)->Result<(),String>{
     info(&format!("begin request for {0}",modpack.get_name()),app);
@@ -16,16 +19,56 @@ pub fn download_modpack(app:&mut App, modpack: Modpack, minecraft_path: String,l
 
     info(&format!("url: {}", url),app);
 
+    let zip_file_path = download_zip(app,url)?;
+    let mod_folder_path = Path::new(&minecraft_path).join("mods");
+
+    clear_folder(TEMP_MOD_PATH.to_string())?;
+    clear_folder(mod_folder_path.to_str().unwrap().to_string())?;
+
+    extract_zip(zip_file_path,TEMP_MOD_PATH.to_string())?;
+
+    copy_folder(Path::new(TEMP_MOD_PATH),Path::new(&mod_folder_path)).unwrap();
+
+    Ok(())
+}
+
+fn copy_folder(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<()>{
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let ty = entry.file_type()?;
+        if ty.is_dir() {
+            continue;
+        } else {
+            fs::copy(entry.path(), dst.as_ref().join(entry.file_name()))?;
+        }
+    }
+    Ok(())
+}
+
+fn clear_folder(path:String) -> Result<(),String>{
+    match fs::remove_dir_all(&path){
+        Ok(_) => {}
+        Err(err) => {
+            return Err(err.to_string())
+        }
+    }
+    match fs::create_dir(&path){
+        Ok(_) => {}
+        Err(err) => {
+            return Err(err.to_string())
+        }
+    }
+    Ok(())
+}
+
+fn download_zip(app:&mut App, url:String) -> Result<String, String> {
     let mut response = match  blocking::get(url) {
         Ok(resp) => resp,
         Err(err) => {
             error("Modpack download failed!",app);
-            return Err(err.to_string());
+            return Err("Failed to get pack".to_string());
         }
     };
-
-    let mod_folder_path = Path::new(&minecraft_path).join("mods");
-
     let zip_file_path = Path::new(TEMP_PATH).join("zip.zip");
 
     let mut file = fs::OpenOptions::new()
@@ -33,9 +76,24 @@ pub fn download_modpack(app:&mut App, modpack: Modpack, minecraft_path: String,l
         .write(true)
         .create(true)
         // either use the ? operator or unwrap since it returns a Result
-        .open(zip_file_path).unwrap();
+        .open(&zip_file_path).unwrap();
 
     file.write_all(&*response.bytes().unwrap()).unwrap();
+    Ok(zip_file_path.as_path().to_str().unwrap().to_string())
+}
+
+fn extract_zip(zip_file_path:String,output_path:String)->Result<(),String>{
+    let archive: Vec<u8> = fs::read(zip_file_path).unwrap();
+    let target_dir = PathBuf::from(output_path); // Doesn't need to exist
+
+    // The third parameter allows you to strip away toplevel directories.
+    // If `archive` contained a single folder, that folder's contents would be extracted instead.
+    match zip_extract::extract(Cursor::new(archive), &target_dir, true) {
+        Ok(_) => {}
+        Err(err) => {
+            return Err(err.to_string())
+        }
+    };
 
     Ok(())
 }
