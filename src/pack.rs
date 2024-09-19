@@ -23,11 +23,16 @@ pub fn download_modpack(app:&mut App, modpack: Modpack, minecraft_path: String,l
     let mod_folder_path = Path::new(&minecraft_path).join("mods");
 
     clear_folder(TEMP_MOD_PATH.to_string())?;
+    info("cleared temp folder",app);
+
     clear_folder(mod_folder_path.to_str().unwrap().to_string())?;
+    info("cleared mods folder",app);
 
     extract_zip(zip_file_path,TEMP_MOD_PATH.to_string())?;
+    info("extracted zip",app);
 
     copy_folder(Path::new(TEMP_MOD_PATH),Path::new(&mod_folder_path)).unwrap();
+    info("copied mods into mod folder",app);
 
     Ok(())
 }
