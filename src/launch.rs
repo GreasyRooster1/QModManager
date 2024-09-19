@@ -20,7 +20,20 @@ pub struct LaunchSettings{
     pub(crate) host_port:i32,
 }
 
-
+impl LaunchSettings{
+    pub fn from_app(app:&App) ->LaunchSettings{
+       LaunchSettings{
+            forge_version:app.forge_version.clone(),
+            minecraft_version:app.minecraft_version.clone(),
+            modpack: app.modpack.clone(),
+            is_cracked:app.is_cracked.clone(),
+            auth_username: app.auth_username.clone(),
+            auth_password: app.auth_password.clone(),
+            host_ip: app.host_ip.clone(),
+            host_port: app.host_port.clone(),
+        }
+    }
+}
 
 enum LaunchAbortReason{
     MinecraftMissing,

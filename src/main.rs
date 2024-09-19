@@ -230,7 +230,7 @@ fn right_panel(ui: &mut Ui, app: &mut App){
         }
 
         if ui.button("Download Modpack Raw").clicked(){
-            download_modpack();
+            download_modpack(app,app.modpack.clone(),verify_minecraft_install().unwrap(),&LaunchSettings::from_app(app)).unwrap();
         }
     });
 }
@@ -239,16 +239,7 @@ fn bottom_panel(ui: &mut Ui, app: &mut App){
     ui.vertical_centered(|ui| {
         if ui.button("LAUNCH").clicked() {
             info("Launch button clicked",app);
-            let launch_settings = LaunchSettings{
-                forge_version:app.forge_version.clone(),
-                minecraft_version:app.minecraft_version.clone(),
-                modpack: app.modpack.clone(),
-                is_cracked:app.is_cracked.clone(),
-                auth_username: app.auth_username.clone(),
-                auth_password: app.auth_password.clone(),
-                host_ip: app.host_ip.clone(),
-                host_port: app.host_port.clone(),
-            };
+            let launch_settings = LaunchSettings::from_app(app);
             launch(app,&launch_settings);
         }
     });
