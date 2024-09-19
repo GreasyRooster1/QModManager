@@ -81,8 +81,8 @@ impl Default for App {
             minecraft_version: "1.20.1".to_string(),
             forge_version: "47.3.10".to_string(),
             is_cracked: false,
-            host_ip: "10.0.0.0".to_string(),
-            host_port: 255,
+            host_ip: "127.0.0.1".to_string(),
+            host_port: 7878,
             auth_username: "".to_string(),
             auth_password: "Mine2021!".to_string(),
             debug_console_content: "".to_string(),
@@ -237,6 +237,8 @@ fn bottom_panel(ui: &mut Ui, app: &mut App){
                 is_cracked:app.is_cracked.clone(),
                 auth_username: app.auth_username.clone(),
                 auth_password: app.auth_password.clone(),
+                host_ip: app.host_ip.clone(),
+                host_port: app.host_port.clone(),
             };
             launch(app,&launch_settings);
         }

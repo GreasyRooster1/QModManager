@@ -15,6 +15,9 @@ pub struct LaunchSettings{
     pub(crate) is_cracked:bool,
     pub(crate) auth_username:String,
     pub(crate) auth_password:String,
+
+    pub(crate) host_ip:String,
+    pub(crate) host_port:i32,
 }
 
 
@@ -24,6 +27,7 @@ enum LaunchAbortReason{
     FMLMissing,
     FMLMalformed,
     NoArgumentsFound,
+    NetworkError,
     RuntimeException,
 }
 
@@ -34,6 +38,7 @@ impl LaunchAbortReason {
             LaunchAbortReason::FMLMissing => "FMLMissing",
             LaunchAbortReason::FMLMalformed => "FMLMalformed",
             LaunchAbortReason::NoArgumentsFound => "NoArgumentsFound",
+            LaunchAbortReason::NetworkError => "NetworkError",
             LaunchAbortReason::RuntimeException => "RuntimeException",
         }
     }
@@ -116,7 +121,16 @@ pub fn preform_launch_checks(app:&mut App,launch_settings: &LaunchSettings)->Res
 pub fn launch(app:&mut App,launch_settings: &LaunchSettings){
     match preform_launch_checks(app,launch_settings) {
         Ok((minecraft_path,fml_path,fml_jar)) => {
-            download_modpack(app,launch_settings.modpack.clone());
+            match download_modpack(app,launch_settings.modpack.clone(),minecraft_path,launch_settings) {
+                Ok(_) => {
+                    info("Pack collected successfully",app);
+                }
+                Err(err) => {
+                    error(format!("Pack did not download correctly -> {err}").as_str(),app);
+                    abort_launch(app, LaunchAbortReason::NetworkError);
+                    return;
+                }
+            };
 
             let launch_command = match get_launch_command(app, Path::new(&fml_path),Path::new(&fml_path),launch_settings) {
                 Ok(args) => args,
