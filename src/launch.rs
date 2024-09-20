@@ -1,10 +1,11 @@
 use std::fs::{copy, File};
 use std::io::{stdout, Read};
 use std::path::Path;
+use std::thread;
 use directories::{BaseDirs, ProjectDirs};
 use crate::{App, Modpack};
 use crate::log::{error, info, warn};
-use crate::pack::download_modpack;
+use crate::pack::{download_modpack};
 
 pub struct LaunchSettings{
     pub(crate) forge_version: String,

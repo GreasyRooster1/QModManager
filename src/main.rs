@@ -230,7 +230,12 @@ fn right_panel(ui: &mut Ui, app: &mut App){
         }
 
         if ui.button("Download Modpack Raw").clicked(){
-            download_modpack(app,app.modpack.clone(),verify_minecraft_install().unwrap(),&LaunchSettings::from_app(app)).unwrap();
+            match download_modpack(app,app.modpack.clone(),verify_minecraft_install().unwrap(),&LaunchSettings::from_app(app)) {
+                Ok(_) => {}
+                Err(err) => {
+                    error(&format!("Failed to download modpack: {err}"),app)
+                }
+            }
         }
     });
 }

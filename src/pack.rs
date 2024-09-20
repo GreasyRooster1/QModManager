@@ -1,7 +1,9 @@
 use std::error::Error;
 use std::fmt::format;
 use std::{fs, io};
+
 use std::io::{Cursor, Write};
+use std::thread;
 use std::path::{Path, PathBuf};
 use crate::{App, Modpack};
 use crate::launch::LaunchSettings;
@@ -12,7 +14,7 @@ use zip_extract::ZipExtractError;
 const TEMP_PATH:&str = "tmp";
 const TEMP_MOD_PATH:&str = "tmp\\mod";
 
-pub fn download_modpack(app:&mut App, modpack: Modpack, minecraft_path: String,launch_settings: &LaunchSettings)->Result<(),String>{
+pub fn download_modpack(app:&mut App, modpack: Modpack, minecraft_path: String,launch_settings: &LaunchSettings) -> Result<(),String>{
     info(&format!("begin request for {0}",modpack.get_name()),app);
 
     let url = format!("http://{0}:{1}/{2}",launch_settings.host_ip,launch_settings.host_port,launch_settings.modpack.get_server_identifier());
