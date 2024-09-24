@@ -6,6 +6,9 @@ use directories::{BaseDirs, ProjectDirs};
 use crate::{App, Modpack};
 use crate::log::{error, info, warn};
 use crate::pack::{download_modpack};
+use crate::lib::manager::InstanceManager;
+use crate::lib::instance::Instance;
+use crate::lib::types::{forge, vanilla};
 
 pub struct LaunchSettings{
     pub(crate) forge_version: String,
@@ -132,12 +135,26 @@ pub fn preform_launch_checks(app:&mut App,launch_settings: &LaunchSettings)->Res
     Ok((minecraft_path,fml_path,fml_jar))
 }
 
+pub fn launch_client(){
+    let mut ima = InstanceManager::new(instances_path.clone());
+    let instance_paths = ima.get_list();
+    for instance_path in instance_paths {
+        let instance = Instance::from(instance_path);
+        if &instance.uuid()[0..8] == id {
+
+            instance.launch(app.is_present("verbose"));
+        }
+    }
+
+}
+
 pub fn launch(app:&mut App,launch_settings: &LaunchSettings){
     match preform_launch_checks(app,launch_settings) {
         Ok((minecraft_path,fml_path,fml_jar)) => {
             match download_modpack(app,launch_settings.modpack.clone(),minecraft_path,launch_settings) {
                 Ok(_) => {
                     info("Pack collected successfully",app);
+
                 }
                 Err(err) => {
                     error(format!("Pack did not download correctly -> {err}").as_str(),app);
@@ -146,15 +163,7 @@ pub fn launch(app:&mut App,launch_settings: &LaunchSettings){
                 }
             };
 
-            let launch_command = match get_launch_command(app, Path::new(&fml_path),Path::new(&fml_path),launch_settings) {
-                Ok(args) => args,
-                Err(())=>{
-                    abort_launch(app, LaunchAbortReason::NoArgumentsFound);
-                    return;
-                }
-            };
 
-            info(format!("launch command: {launch_command}").as_str(),app);
         }
         Err(_) => {
             error("Launch checks failed", app);

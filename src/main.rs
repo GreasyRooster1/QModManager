@@ -2,6 +2,7 @@ mod log;
 mod launch;
 mod auth;
 mod pack;
+mod lib;
 
 use std::process::Command;
 use eframe::{egui, NativeOptions, Theme};
