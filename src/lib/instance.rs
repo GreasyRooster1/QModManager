@@ -15,10 +15,10 @@ pub enum InstanceType {
 
 #[derive(Clone)]
 pub struct Instance {
-    name: String,
-    path: PathBuf,
-    invoker : Option<Invoker>,
-    uuid : Option<Uuid>, 
+    pub(crate) name: String,
+    pub(crate) path: PathBuf,
+    pub(crate) invoker : Option<Invoker>,
+    pub(crate) uuid : Option<Uuid>,
 }
 
 
