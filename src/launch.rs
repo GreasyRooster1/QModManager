@@ -1,19 +1,13 @@
 use std::fs::{copy, File, OpenOptions};
 use std::io::{stdout, Read};
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::thread;
 use ansi_term::Color::Red;
 use directories::{BaseDirs, ProjectDirs};
 use crate::{App, Modpack};
 use crate::log::{error, info, warn};
 use crate::pack::{download_modpack};
-use crate::lib::manager::InstanceManager;
-use crate::lib::instance::{Instance, InstanceType};
-use crate::lib::invoker::Invoker;
-use crate::lib::types::{forge, vanilla};
-use crate::lib::{setup, util};
-use crate::lib::auth::User;
-use crate::lib::types::forge::run_forge_installation;
 
 pub struct LaunchSettings{
     pub(crate) forge_version: String,
@@ -140,138 +134,6 @@ pub fn preform_launch_checks(app:&mut App,launch_settings: &LaunchSettings)->Res
     Ok((minecraft_path,fml_path,fml_jar))
 }
 
-
-
-pub fn setup_forge(mut ima: &mut InstanceManager, name: &str,launch_settings: &LaunchSettings,user_path:PathBuf){
-
-    let instance = ima.create_instance(name.to_string()).expect("Error creating instance");
-
-    let installer_cp = match cfg!(windows) {
-        true => format!("forge-{}-installer.jar;forge-installer-headless-1.0.1.jar",launch_settings.forge_version),
-        false =>  format!("forge-{}-installer.jar:forge-installer-headless-1.0.1.jar",launch_settings.forge_version)
-    };
-    let mut manifest_path = instance.get_path();
-    manifest_path.push("mods");
-    manifest_path.push("manifest.json");
-
-    let manifest_file = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .open(manifest_path)
-        .expect("Unable to open manifest file");
-
-    let manifest_json: serde_json::Value =
-        serde_json::from_reader(manifest_file).expect("Manifest contains invalid json");
-
-    let mut modloader = manifest_json["minecraft"]["modLoaders"][0]["id"]
-        .as_str()
-        .unwrap();
-
-
-
-
-    // format is like `forge-${version}`
-    let modloader_split: Vec<&str> = modloader.split('-').collect();
-
-    if modloader_split[0] != "forge" {
-        println!("{}", Red.paint("This is not a forge modpack. Quitting..."));
-        return;
-    }
-
-    let mcv = manifest_json["minecraft"]["version"].as_str().unwrap();
-    let fv = modloader_split[1];
-
-    run_forge_installation(instance.get_path(), installer_cp, true);
-
-    let mut mods_path = instance.get_path();
-    mods_path.push("mods");
-
-    let mut libpath = instance.get_path();
-    libpath.push("libraries");
-
-    let mut binpath = instance.get_path();
-    binpath.push("bin");
-
-    let mut assets_path = instance.get_path();
-    assets_path.push("assets");
-
-    let mut forge_version_path = instance.get_path();
-    forge_version_path.push(format!(
-        "versions/{}-forge-{}/{}-forge-{}.json",
-        mcv, fv, mcv, fv
-    ));
-
-    let mut vanilla_version_path = instance.get_path();
-    vanilla_version_path.push(format!("versions/{}/{}.json", mcv, mcv));
-    let version_paths = vec![vanilla_version_path.clone(), forge_version_path.clone()];
-    let classes = setup::get_cp_from_version(PathBuf::from("libraries"), version_paths);
-    let mut classpaths: Vec<PathBuf> = Vec::new();
-
-    for class in classes {
-        classpaths.push(class.1);
-    }
-    let forge_json_file = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .open(forge_version_path)
-        .expect("Couldn't open forge version file");
-
-    let forge_json: serde_json::Value =
-        serde_json::from_reader(forge_json_file).expect("Unable to parse forge json file");
-
-    let forge_args = util::get_forge_args(forge_json.clone(), false);
-
-
-    let mut vanilla_version_path = instance.get_path();
-    vanilla_version_path.push(format!("versions/{}/{}.json", mcv, mcv));
-
-    let version_file = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .open(vanilla_version_path)
-        .unwrap();
-    let version : serde_json::Value = serde_json::from_reader(version_file).expect("Unable to parse version file");
-    let asset_index =  version["assetIndex"]["id"].as_str().unwrap();
-
-    let main_class = forge_json["mainClass"]
-        .as_str()
-        .expect("Couldn't get main class");
-
-    let user = User::from(user_path);
-
-    let mut invoker = Invoker::new(
-        "java ".to_string(),
-        PathBuf::from("bin"),
-        classpaths,
-        format!("{} --assetsDir ./assets --assetIndex {} --gameDir . --versionType release --userType mojang", forge_args.unwrap(), asset_index),
-        main_class.to_string(),
-        instance.name(),
-        InstanceType::Forge,
-        user.name,
-        user.token,
-        user.id.to_string()
-    );
-}
-
-pub fn create_instance(ima: &mut InstanceManager, user_path:PathBuf, launch_settings: &LaunchSettings){
-    if !user_path.exists() {
-        return;
-    }
-
-    setup_forge(ima, "forge", launch_settings, user_path);
-}
-
-pub fn launch_client(launch_settings: &LaunchSettings){
-    let instances_path = util::get_instances_path().unwrap();
-    let mut ima = InstanceManager::new(instances_path.clone());
-
-    create_instance(&mut ima.clone(), instances_path, launch_settings);
-
-    let instance_path = ima.clone().get_list()[0].clone();
-    let instance = Instance::from(instance_path);
-    instance.launch(true);
-}
-
 pub fn launch(app:&mut App,launch_settings: &LaunchSettings){
     match preform_launch_checks(app,launch_settings) {
         Ok((minecraft_path,fml_path,fml_jar)) => {
@@ -296,7 +158,11 @@ pub fn launch(app:&mut App,launch_settings: &LaunchSettings){
     }
 }
 
-pub fn get_launch_command(app:&mut App, fml_path: &Path, fml_jar: &Path,launch_settings: &LaunchSettings) ->Result<String,()>{
+fn launch_client(launch_settings: &LaunchSettings) {
+    Command::new("C:\\Program Files (x86)\\Minecraft Launcher\\MinecraftLauncher.exe").spawn().unwrap();
+}
+
+pub fn get_launch_command(app:&mut App, fml_path: &Path, fml_jar: &Path, launch_settings: &LaunchSettings) ->Result<String,()>{
     let config_path = fml_path.join(format!("{0}-forge-{1}.json",launch_settings.minecraft_version,launch_settings.forge_version));
     let mut file = match File::open(&config_path){
         Ok(file) => file,

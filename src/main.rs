@@ -2,7 +2,6 @@ mod log;
 mod launch;
 mod auth;
 mod pack;
-mod lib;
 
 use std::process::Command;
 use eframe::{egui, NativeOptions, Theme};
@@ -83,7 +82,7 @@ impl Default for App {
             minecraft_version: "1.20.1".to_string(),
             forge_version: "47.3.10".to_string(),
             is_cracked: false,
-            host_ip: "127.0.0.1".to_string(),
+            host_ip: "24.4.89.35".to_string(),
             host_port: 7878,
             auth_username: "".to_string(),
             auth_password: "Mine2021!".to_string(),
@@ -179,14 +178,15 @@ fn left_panel(ui: &mut Ui, app: &mut App){
 
         line_break(ui);
 
-        ui.label("Username");
-        ui.text_edit_singleline(&mut app.auth_username);
-        ui.label("Password");
-        ui.add(
-            egui::TextEdit::singleline(&mut app.auth_password).password(true).interactive(!app.is_cracked),
-        );
 
-        ui.checkbox(&mut app.is_cracked,"Is Cracked?")
+        // ui.label("Username");
+        // ui.text_edit_singleline(&mut app.auth_username);
+        // ui.label("Password");
+        // ui.add(
+        //     egui::TextEdit::singleline(&mut app.auth_password).password(true).interactive(!app.is_cracked),
+        // );
+        //
+        // ui.checkbox(&mut app.is_cracked,"Is Cracked?")
     });
 }
 
