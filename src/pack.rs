@@ -83,6 +83,10 @@ fn download_zip(app:&mut App, url:String) -> Result<String, String> {
             return Err("Failed to get pack".to_string());
         }
     };
+    let bytes = response.bytes().unwrap();
+    if std::str::from_utf8(bytes.as_ref()).unwrap() == "PACK NOT FOUND"{
+        return Err("Cant find pack!".to_string());
+    }
     let zip_file_path = Path::new(TEMP_PATH).join("zip.zip");
 
     let mut file = fs::OpenOptions::new()
@@ -92,7 +96,7 @@ fn download_zip(app:&mut App, url:String) -> Result<String, String> {
         // either use the ? operator or unwrap since it returns a Result
         .open(&zip_file_path).unwrap();
 
-    file.write_all(&*response.bytes().unwrap()).unwrap();
+    file.write_all(&*bytes).unwrap();
     Ok(zip_file_path.as_path().to_str().unwrap().to_string())
 }
 
