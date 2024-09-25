@@ -13,10 +13,10 @@ You should have received a copy of the GNU General Public License along with thi
  */
 
 
-use crate::instance::Instance;
-use crate::util;
+use crate::lib::instance::Instance;
+use crate::lib::util;
 
-use crate::{
+use crate::lib::{
     cf::CFFile,
     downloader::Downloader,
 };

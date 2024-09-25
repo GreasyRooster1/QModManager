@@ -5,7 +5,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use subprocess::Exec;
 
-use crate::instance::InstanceType;
+use crate::lib::instance::InstanceType;
 
 #[derive(Clone)]
 pub struct Invoker {

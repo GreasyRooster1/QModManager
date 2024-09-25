@@ -1,7 +1,7 @@
 use std::fs::{self, OpenOptions};
 use std::path::PathBuf;
-use crate::instance::Instance;
-use prettytable::Table;
+use crate::lib::instance::Instance;
+use prettytable::{row, Table};
 
 
 #[derive(Clone)]
@@ -53,32 +53,6 @@ impl InstanceManager {
         }
 
         invoker_files
-    }
-
-    pub fn display_list(&mut self) {
-        let instances  = self.get_list();
-
-        let mut table = Table::new();
-        table.add_row(row!("ID", "NAME", "TYPE"));
-
-        for instance in instances {
-            let file  = OpenOptions::new()
-                        .read(true)
-                        .write(true)
-                        .open(instance)
-                        .unwrap();
-            let instance_json  : serde_json::Value = serde_json::from_reader(file).unwrap();
-            let name = instance_json["instance_name"].as_str().unwrap();
-            let uuid = instance_json["instance_uuid"].as_str().unwrap();
-            let instance_type = instance_json["instance_type"].as_str().unwrap();
-
-            let mut uuid_prefix: String = String::new();
-            uuid_prefix.push_str(&uuid[0..8]);
-
-            table.add_row(row!(uuid_prefix, name, instance_type));
-        }
-
-        table.printstd();
     }
 }
 

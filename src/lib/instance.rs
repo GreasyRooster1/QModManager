@@ -4,7 +4,7 @@ use std::fs::OpenOptions;
 use std::path::PathBuf;
 use uuid::Uuid;
 
-use crate::invoker::Invoker;
+use crate::lib::invoker::Invoker;
 
 #[derive(Clone)]
 pub enum InstanceType {

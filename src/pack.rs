@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::fmt::format;
 use std::{fs, io};
-
+use std::fs::remove_file;
 use std::io::{Cursor, Write};
 use std::thread;
 use std::path::{Path, PathBuf};
@@ -20,6 +20,13 @@ pub fn download_modpack(app:&mut App, modpack: Modpack, minecraft_path: String,l
     let url = format!("http://{0}:{1}/{2}",launch_settings.host_ip,launch_settings.host_port,launch_settings.modpack.get_server_identifier());
 
     info(&format!("url: {}", url),app);
+
+    match remove_file(Path::new(TEMP_PATH).join("zip.zip")) {
+        Ok(_) => {
+        }
+        Err(_) => {
+        }
+    };
 
     let zip_file_path = download_zip(app,url)?;
     let mod_folder_path = Path::new(&minecraft_path).join("mods");

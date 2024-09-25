@@ -9,6 +9,7 @@ use crate::pack::{download_modpack};
 use crate::lib::manager::InstanceManager;
 use crate::lib::instance::Instance;
 use crate::lib::types::{forge, vanilla};
+use crate::lib::util;
 
 pub struct LaunchSettings{
     pub(crate) forge_version: String,
@@ -136,14 +137,15 @@ pub fn preform_launch_checks(app:&mut App,launch_settings: &LaunchSettings)->Res
 }
 
 pub fn launch_client(){
+    let instances_path = util::get_instances_path().unwrap();
     let mut ima = InstanceManager::new(instances_path.clone());
     let instance_paths = ima.get_list();
     for instance_path in instance_paths {
         let instance = Instance::from(instance_path);
-        if &instance.uuid()[0..8] == id {
+        //if &instance.uuid()[0..8] == id {
 
-            instance.launch(app.is_present("verbose"));
-        }
+            instance.launch(true);
+        //}
     }
 
 }

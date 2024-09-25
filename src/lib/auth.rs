@@ -4,7 +4,7 @@ use std::fs::OpenOptions;
 use std::io::{self, Write};
 use std::path::PathBuf;
 use ansi_term::Color::*;
-use crate::manager::InstanceManager;
+use crate::lib::manager::InstanceManager;
 
 #[derive(Serialize, Deserialize)]
 pub struct User {
