@@ -5,6 +5,7 @@ use std::process::Command;
 use std::thread;
 use ansi_term::Color::Red;
 use directories::{BaseDirs, ProjectDirs};
+use log::info;
 use crate::{App, Modpack};
 use crate::log::{error, info, warn};
 use crate::pack::{download_modpack};
@@ -140,7 +141,7 @@ pub fn launch(app:&mut App,launch_settings: &LaunchSettings){
             match download_modpack(app,launch_settings.modpack.clone(),minecraft_path,launch_settings) {
                 Ok(_) => {
                     info("Pack collected successfully",app);
-                    launch_client(launch_settings);
+                    launch_client(app,launch_settings);
                 }
                 Err(err) => {
                     error(format!("Pack did not download correctly -> {err}").as_str(),app);
@@ -158,8 +159,21 @@ pub fn launch(app:&mut App,launch_settings: &LaunchSettings){
     }
 }
 
-fn launch_client(launch_settings: &LaunchSettings) {
-    Command::new("C:\\Program Files (x86)\\Minecraft Launcher\\MinecraftLauncher.exe").spawn().unwrap();
+fn launch_client(app:&mut App,launch_settings: &LaunchSettings) {
+    match Command::new("C:\\Program Files (x86)\\Minecraft Launcher\\MinecraftLauncher.exe").spawn() {
+        Ok(_) => {}
+        Err(_) => {
+            info("Cant launch at default location",app);
+            match Command::new("G:\\Minecraft Launcher\\MinecraftLauncher.exe").spawn() {
+                Ok(_) => {}
+                Err(_) => {
+                    info("Cant launch at G Drive location",app);
+                    return;
+                }
+            }
+        }
+    }
+    info!("launched successfully",app);
 }
 
 pub fn get_launch_command(app:&mut App, fml_path: &Path, fml_jar: &Path, launch_settings: &LaunchSettings) ->Result<String,()>{
