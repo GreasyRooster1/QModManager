@@ -1,12 +1,13 @@
 
 
-use std::error::Error;
-use std::fmt::format;
+use std::fmt::{format};
 use std::{fs, io};
+use std::error::Error;
 use std::fs::remove_file;
 use std::io::{Cursor, Write};
 use std::thread;
 use std::path::{Path, PathBuf};
+use std::str::Utf8Error;
 use crate::{App, Modpack};
 use crate::launch::LaunchSettings;
 use crate::log::{error, info};
@@ -82,27 +83,42 @@ fn download_zip(app:&mut App, url:String) -> Result<String, String> {
         Ok(resp) => resp,
         Err(err) => {
             error("Modpack download failed!",app);
-            return Err("Failed to get pack".to_string());
+            return Err("Remote server did not respond".to_string());
         }
     };
     let bytes = response.bytes().unwrap();
-    if std::str::from_utf8(bytes.as_ref()).unwrap() == "PACK NOT FOUND"{
-        return Err("Cant find pack!".to_string());
+    match std::str::from_utf8(bytes.as_ref()) {
+        Ok(str) => {
+            if str =="PACK NOT FOUND"{
+                return Err("Remote server does not have pack data".to_string());
+            }
+        }
+        _ => {}
     }
     let zip_file_path = Path::new(TEMP_PATH).join("zip.zip");
 
-    let mut file = fs::OpenOptions::new()
-        // .create(true) // To create a new file
+    let mut file = match fs::OpenOptions::new()
+        .create(true) // To create a new file
         .write(true)
         .create(true)
-        // either use the ? operator or unwrap since it returns a Result
-        .open(&zip_file_path).unwrap();
+        .open(&zip_file_path) {
+        Ok(file) => file,
+        Err(_) => {
+            return Err("Failed to find temp folder".to_string());
+        }
+    };
 
     file.write_all(&*bytes).unwrap();
     Ok(zip_file_path.as_path().to_str().unwrap().to_string())
 }
 
-fn extract_zip(zip_file_path:String,output_path:String)->Result<(),String>{
+pub(crate) fn setup_temp_folder() -> Result<(), Box<dyn Error>>{
+    fs::create_dir(TEMP_PATH)?;
+    fs::create_dir(TEMP_MOD_PATH)?;
+    Ok(())
+}
+
+fn extract_zip(zip_file_path:String, output_path:String) ->Result<(),String>{
     let archive: Vec<u8> = fs::read(zip_file_path).unwrap();
     let target_dir = PathBuf::from(output_path); // Doesn't need to exist
 

@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+//#![windows_subsystem = "windows"]
 
 mod log;
 mod launch;
@@ -10,13 +10,17 @@ use eframe::{egui, NativeOptions, Theme};
 use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerResponse, PopupCloseBehavior, Response, ScrollArea, SidePanel, TopBottomPanel, Ui};
 use crate::launch::{launch, preform_launch_checks, verify_fml_folder, verify_minecraft_install, LaunchSettings};
 use crate::log::{error, info};
-use crate::pack::download_modpack;
+use crate::pack::{download_modpack, setup_temp_folder};
 
 const WIDTH:f32  = 1000.;
 const HEIGHT:f32  = 700.;
 
 
 fn main() {
+    match setup_temp_folder(){
+        Ok(_)=>{}
+        Err(_)=>{}
+    }
     let options = NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([WIDTH, HEIGHT]),
         default_theme: Theme::Dark,
