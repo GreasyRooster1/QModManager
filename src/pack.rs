@@ -16,6 +16,7 @@ use zip_extract::ZipExtractError;
 
 const TEMP_PATH:&str = "tmp";
 const TEMP_MOD_PATH:&str = "tmp\\mod";
+const TEMP_DATA_PATH:&str = "tmp\\data.dat";
 
 pub fn download_modpack(app:&mut App, modpack: Modpack, minecraft_path: String,launch_settings: &LaunchSettings) -> Result<(),String>{
     info(&format!("begin request for {0}",modpack.get_name()),app);
@@ -24,6 +25,31 @@ pub fn download_modpack(app:&mut App, modpack: Modpack, minecraft_path: String,l
 
     info(&format!("url: {}", url),app);
 
+    fs::write(Path::new(TEMP_DATA_PATH), format!("{}\n{}",url,minecraft_path)).unwrap();
+
+    let handler = thread::spawn(|| {
+        return match download_thread() {
+            Ok(_) => {
+                Ok(())
+            }
+            Err(err) => {
+                Err(err)
+            }
+        }
+    });
+    Ok(())
+
+    // match handler.join(){
+    //     Ok(h) => {
+    //         h
+    //     }
+    //     Err(err) => {
+    //         Err("thread failed".parse().unwrap())
+    //     }
+    // }
+}
+
+pub fn download_thread() -> Result<(),String>{
     match remove_file(Path::new(TEMP_PATH).join("zip.zip")) {
         Ok(_) => {
         }
@@ -31,20 +57,37 @@ pub fn download_modpack(app:&mut App, modpack: Modpack, minecraft_path: String,l
         }
     };
 
-    let zip_file_path = download_zip(app,url)?;
-    let mod_folder_path = Path::new(&minecraft_path).join("mods");
+    let data_string = match fs::read_to_string(TEMP_DATA_PATH){
+        Ok(s) => {s}
+        Err(e) => {return Err(e.to_string())}
+    };
+
+    let mut lines = data_string.lines();
+
+    let url = match lines.next(){
+        Some(url) => url.to_string(),
+        None => {return Err("cant get url".to_string())}
+    };
+    let minecraft_path = match lines.next(){
+        Some(minecraft_path) => minecraft_path,
+        None => {return Err("cant get minecraft path".to_string())}
+    };
+
+    let zip_file_path = download_zip(url)?;
+    let mod_folder_path = Path::new(minecraft_path).join("mods");
 
     clear_folder(TEMP_MOD_PATH.to_string())?;
-    info("cleared temp folder",app);
 
     clear_folder(mod_folder_path.to_str().unwrap().to_string())?;
-    info("cleared mods folder",app);
 
     extract_zip(zip_file_path,TEMP_MOD_PATH.to_string())?;
-    info("extracted zip",app);
 
-    copy_folder(Path::new(TEMP_MOD_PATH),Path::new(&mod_folder_path)).unwrap();
-    info("copied mods into mod folder",app);
+    match copy_folder(Path::new(TEMP_MOD_PATH),Path::new(&mod_folder_path)) {
+        Ok(_) => {}
+        Err(e) => {
+            return Err(e.to_string())
+        }
+    }
 
     Ok(())
 }
@@ -78,11 +121,10 @@ fn clear_folder(path:String) -> Result<(),String>{
     Ok(())
 }
 
-fn download_zip(app:&mut App, url:String) -> Result<String, String> {
+fn download_zip(url:String) -> Result<String, String> {
     let mut response = match  blocking::get(url) {
         Ok(resp) => resp,
         Err(err) => {
-            error("Modpack download failed!",app);
             return Err("Remote server did not respond".to_string());
         }
     };
