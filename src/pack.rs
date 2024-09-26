@@ -16,7 +16,7 @@ use zip_extract::ZipExtractError;
 
 const TEMP_PATH:&str = "tmp";
 const TEMP_MOD_PATH:&str = "tmp\\mod";
-const TEMP_DATA_PATH:&str = "tmp\\data.dat";
+pub(crate) const TEMP_DATA_PATH:&str = "tmp\\data.dat";
 
 pub fn download_modpack(app:&mut App, modpack: Modpack, minecraft_path: String,launch_settings: &LaunchSettings) -> Result<(),String>{
     info(&format!("begin request for {0}",modpack.get_name()),app);
@@ -38,15 +38,6 @@ pub fn download_modpack(app:&mut App, modpack: Modpack, minecraft_path: String,l
         }
     });
     Ok(())
-
-    // match handler.join(){
-    //     Ok(h) => {
-    //         h
-    //     }
-    //     Err(err) => {
-    //         Err("thread failed".parse().unwrap())
-    //     }
-    // }
 }
 
 pub fn download_thread() -> Result<(),String>{

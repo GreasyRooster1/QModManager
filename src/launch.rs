@@ -2,13 +2,13 @@ use std::fs::{copy, File, OpenOptions};
 use std::io::{stdout, Read};
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use std::thread;
+use std::{fs, thread};
 use ansi_term::Color::Red;
 use directories::{BaseDirs, ProjectDirs};
 use log::info;
 use crate::{App, Modpack};
 use crate::log::{error, info, warn};
-use crate::pack::{download_modpack};
+use crate::pack::{download_modpack, download_thread};
 
 pub struct LaunchSettings{
     pub(crate) forge_version: String,
@@ -138,19 +138,7 @@ pub fn preform_launch_checks(app:&mut App,launch_settings: &LaunchSettings)->Res
 pub fn launch(app:&mut App,launch_settings: &LaunchSettings){
     match preform_launch_checks(app,launch_settings) {
         Ok((minecraft_path,fml_path,fml_jar)) => {
-            match download_modpack(app,launch_settings.modpack.clone(),minecraft_path,launch_settings) {
-                Ok(_) => {
-                    info("Pack collected successfully",app);
-                    launch_client(app,launch_settings);
-                }
-                Err(err) => {
-                    error(format!("Pack did not download correctly -> {err}").as_str(),app);
-                    abort_launch(app, LaunchAbortReason::NetworkError);
-                    return;
-                }
-            };
-
-
+            download_and_launch(app,launch_settings.modpack.clone(),minecraft_path,&launch_settings)
         }
         Err(_) => {
             error("Launch checks failed", app);
@@ -159,21 +147,39 @@ pub fn launch(app:&mut App,launch_settings: &LaunchSettings){
     }
 }
 
-fn launch_client(app:&mut App,launch_settings: &LaunchSettings) {
+fn download_and_launch(app:&mut App, modpack: Modpack, minecraft_path: String, launch_settings: &LaunchSettings){
+
+    info(&format!("begin request for {0}",modpack.get_name()),app);
+
+    let url = format!("http://{0}:{1}/{2}",launch_settings.host_ip,launch_settings.host_port,launch_settings.modpack.get_server_identifier());
+
+    info(&format!("url: {}", url),app);
+
+    fs::write(Path::new(crate::pack::TEMP_DATA_PATH), format!("{}\n{}", url, minecraft_path)).unwrap();
+
+    let handler = thread::spawn(|| {
+        match download_thread() {
+            Ok(_) => {
+                launch_client()
+            }
+            Err(err) => {
+            }
+        }
+    });
+}
+
+fn launch_client() {
     match Command::new("C:\\Program Files (x86)\\Minecraft Launcher\\MinecraftLauncher.exe").spawn() {
         Ok(_) => {}
         Err(_) => {
-            info("Cant launch at default location",app);
             match Command::new("G:\\Minecraft Launcher\\MinecraftLauncher.exe").spawn() {
                 Ok(_) => {}
                 Err(_) => {
-                    info("Cant launch at G Drive location",app);
                     return;
                 }
             }
         }
     }
-    info("launched successfully",app);
 }
 
 pub fn get_launch_command(app:&mut App, fml_path: &Path, fml_jar: &Path, launch_settings: &LaunchSettings) ->Result<String,()>{
