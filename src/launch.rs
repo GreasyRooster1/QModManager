@@ -173,7 +173,7 @@ fn launch_client(app:&mut App,launch_settings: &LaunchSettings) {
             }
         }
     }
-    info!("launched successfully",app);
+    info("launched successfully",app);
 }
 
 pub fn get_launch_command(app:&mut App, fml_path: &Path, fml_jar: &Path, launch_settings: &LaunchSettings) ->Result<String,()>{
