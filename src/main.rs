@@ -43,7 +43,10 @@ enum Game{
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 enum Modpack{
     ModTeam,
-    Base
+    Base,
+    Other1,
+    Other2,
+    Other3,
 }
 
 impl Modpack {
@@ -51,13 +54,28 @@ impl Modpack {
         match self {
             Modpack::ModTeam => "ModTeam",
             Modpack::Base => "Base",
+            Modpack::Other1 => "Other1",
+            Modpack::Other2 => "Other2",
+            Modpack::Other3 => "Other3",
         }
     }
     fn get_name(&self) -> &'static str {
         match self {
             Modpack::ModTeam => "Modded Team Pack",
             Modpack::Base => "Base Pack",
+            Modpack::Other1 => "Other 1",
+            Modpack::Other2 => "Other 2",
+            Modpack::Other3 => "Other 3",
         }
+    }
+    fn vec_all() -> Vec<Modpack>{
+        vec![
+            Modpack::ModTeam,
+            Modpack::Base,
+            Modpack::Other1,
+            Modpack::Other2,
+            Modpack::Other3,
+        ]
     }
 }
 
@@ -222,8 +240,9 @@ fn right_panel(ui: &mut Ui, app: &mut App){
         egui::ComboBox::from_label("Modpack")
             .selected_text(format!("{0:?}",app.modpack.get_name()))
             .show_ui(ui, |ui| {
-                ui.selectable_value(&mut app.modpack, Modpack::ModTeam, Modpack::ModTeam.get_name());
-                ui.selectable_value(&mut app.modpack, Modpack::Base, Modpack::Base.get_name());
+                for pack in Modpack::vec_all() {
+                    ui.selectable_value(&mut app.modpack,pack.clone(), pack.get_name());
+                }
             });
 
         line_break(ui);
