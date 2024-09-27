@@ -5,9 +5,11 @@ mod launch;
 mod auth;
 mod pack;
 
+use std::env;
+use winresource::WindowsResource;
 use std::process::Command;
-use eframe::{egui, NativeOptions, Theme};
-use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerResponse, PopupCloseBehavior, Response, ScrollArea, SidePanel, TopBottomPanel, Ui};
+use eframe::{egui, NativeOptions, WindowBuilderHook};
+use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerResponse, PopupCloseBehavior, Response, ScrollArea, SidePanel, TopBottomPanel, Ui, IconData};
 use crate::launch::{launch, preform_launch_checks, verify_fml_folder, verify_minecraft_install, LaunchSettings};
 use crate::log::{error, info};
 use crate::pack::{download_modpack, setup_temp_folder};
@@ -17,15 +19,21 @@ const HEIGHT:f32  = 700.;
 
 
 fn main() {
+    if env::var_os("CARGO_CFG_WINDOWS").is_some() {
+        WindowsResource::new()
+            // This path can be absolute, or relative to your crate root.
+            .set_icon("assets/icon.ico")
+            .compile().unwrap();
+    }
     match setup_temp_folder(){
         Ok(_)=>{}
         Err(_)=>{}
     }
     let options = NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([WIDTH, HEIGHT]),
-        default_theme: Theme::Dark,
+        viewport: egui::ViewportBuilder::default().with_inner_size([WIDTH, HEIGHT]).with_icon(load_icon()),
         ..Default::default()
     };
+
     eframe::run_native(
         "QModManager",
         options,
@@ -287,4 +295,22 @@ fn create_centered_heading(title: &str, ui: &mut Ui) -> InnerResponse<()> {
     ui.vertical_centered(|ui|{
         ui.heading(title);
     })
+}
+
+pub(crate) fn load_icon() -> IconData {
+    let (icon_rgba, icon_width, icon_height) = {
+        let icon = include_bytes!("../Icon.png");
+        let image = image::load_from_memory(icon)
+            .expect("Failed to open icon path")
+            .into_rgba8();
+        let (width, height) = image.dimensions();
+        let rgba = image.into_raw();
+        (rgba, width, height)
+    };
+
+    IconData {
+        rgba: icon_rgba,
+        width: icon_width,
+        height: icon_height,
+    }
 }
