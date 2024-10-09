@@ -8,6 +8,8 @@ use std::io::{Cursor, Write};
 use std::thread;
 use std::path::{Path, PathBuf};
 use std::str::Utf8Error;
+use std::sync::Mutex;
+use lazy_static::lazy_static;
 use crate::{App, Modpack};
 use crate::launch::LaunchSettings;
 use crate::log::{error, info};

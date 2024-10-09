@@ -8,8 +8,10 @@ mod pack;
 use std::env;
 use winresource::WindowsResource;
 use std::process::Command;
+use std::sync::Mutex;
 use eframe::{egui, NativeOptions, WindowBuilderHook};
 use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerResponse, PopupCloseBehavior, Response, ScrollArea, SidePanel, TopBottomPanel, Ui, IconData, Layout, Align};
+use lazy_static::lazy_static;
 use crate::launch::{launch, preform_launch_checks, verify_fml_folder, verify_minecraft_install, LaunchSettings};
 use crate::log::{error, info};
 use crate::pack::{download_modpack, setup_temp_folder};
@@ -18,6 +20,10 @@ const WIDTH:f32  = 1000.;
 const HEIGHT:f32  = 700.;
 const VERSION:&str = "QModManager - V1.0.1";
 
+static LOADING: Mutex<bool>;
+lazy_static! {
+    pub static ref LOADING: Mutex<bool> = Mutex::new(false);
+}
 
 fn main() {
     match setup_temp_folder(){
@@ -282,6 +288,7 @@ fn bottom_panel(ui: &mut Ui, app: &mut App){
             let launch_settings = LaunchSettings::from_app(app);
             launch(app,&launch_settings);
         }
+        let ui_state = LOADING.lock().unwrap();
     });
 }
 
