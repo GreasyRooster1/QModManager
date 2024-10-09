@@ -9,13 +9,14 @@ use std::env;
 use winresource::WindowsResource;
 use std::process::Command;
 use eframe::{egui, NativeOptions, WindowBuilderHook};
-use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerResponse, PopupCloseBehavior, Response, ScrollArea, SidePanel, TopBottomPanel, Ui, IconData};
+use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerResponse, PopupCloseBehavior, Response, ScrollArea, SidePanel, TopBottomPanel, Ui, IconData, Layout, Align};
 use crate::launch::{launch, preform_launch_checks, verify_fml_folder, verify_minecraft_install, LaunchSettings};
 use crate::log::{error, info};
 use crate::pack::{download_modpack, setup_temp_folder};
 
 const WIDTH:f32  = 1000.;
 const HEIGHT:f32  = 700.;
+const VERSION:&str = "QModManager - V1.0.1";
 
 
 fn main() {
@@ -218,7 +219,11 @@ fn left_panel(ui: &mut Ui, app: &mut App){
 }
 
 fn center_panel(ui: &mut Ui, app: &mut App){
-    ui.label(format!("{}",app.debug_console_content));
+    ui.with_layout(Layout::bottom_up(Align::LEFT),|ui| {
+            ui.label(VERSION);
+        ui.label(format!("{}",app.debug_console_content));
+    });
+
 }
 
 fn right_panel(ui: &mut Ui, app: &mut App){
@@ -266,6 +271,7 @@ fn right_panel(ui: &mut Ui, app: &mut App){
                 }
             }
         }
+
     });
 }
 
