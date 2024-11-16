@@ -1,3 +1,4 @@
+#![feature(mpmc_channel)]
 #![windows_subsystem = "windows"]
 
 mod log;
@@ -20,10 +21,6 @@ const WIDTH:f32  = 1000.;
 const HEIGHT:f32  = 700.;
 const VERSION:&str = "QModManager - V1.0.1";
 
-static LOADING: Mutex<bool>;
-lazy_static! {
-    pub static ref LOADING: Mutex<bool> = Mutex::new(false);
-}
 
 fn main() {
     match setup_temp_folder(){
@@ -90,6 +87,8 @@ impl Modpack {
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 struct App {
+    update_callback_ctx: Option<egui::Context>,
+
     game: Game,
 
     modpack: Modpack,
@@ -110,6 +109,7 @@ struct App {
 impl Default for App {
     fn default() -> Self {
         Self {
+            update_callback_ctx: None,
             game: Game::Minecraft,
             modpack: Modpack::ModTeam,
             minecraft_version: "1.20.1".to_string(),
@@ -132,6 +132,10 @@ impl App {
         // for e.g. egui::PaintCallback.
         cc.egui_ctx.set_visuals(egui::Visuals::dark());
         Self::default()
+    }
+    fn update_callback(&self) -> impl Fn() {
+        let ctx = self.update_callback_ctx.clone().unwrap();
+        move || {  ctx.request_repaint(); }
     }
 }
 
@@ -288,7 +292,6 @@ fn bottom_panel(ui: &mut Ui, app: &mut App){
             let launch_settings = LaunchSettings::from_app(app);
             launch(app,&launch_settings);
         }
-        let ui_state = LOADING.lock().unwrap();
     });
 }
 
