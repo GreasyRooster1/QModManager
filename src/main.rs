@@ -7,12 +7,14 @@ mod auth;
 mod pack;
 
 use std::env;
+use std::ops::Add;
 use winresource::WindowsResource;
 use std::process::Command;
 use std::sync::Mutex;
 use eframe::{egui, NativeOptions, WindowBuilderHook};
 use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerResponse, PopupCloseBehavior, Response, ScrollArea, SidePanel, TopBottomPanel, Ui, IconData, Layout, Align, ProgressBar};
-use lazy_async_promise::{LazyVecPromise, Progress, Promise};
+use eframe::egui::Key::P;
+use lazy_async_promise::{DataState, DirectCacheAccess, LazyVecPromise, Progress, Promise};
 use lazy_static::lazy_static;
 use crate::launch::{launch, preform_launch_checks, verify_fml_folder, verify_minecraft_install, LaunchSettings};
 use crate::log::{error, info};
@@ -89,7 +91,7 @@ impl Modpack {
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 struct App {
     update_callback_ctx: Option<egui::Context>,
-    download_callback:Option<LazyVecPromise<()>>,
+    download_callback:Option<LazyVecPromise<String>>,
 
     game: Game,
 
@@ -236,9 +238,45 @@ fn left_panel(ui: &mut Ui, app: &mut App){
 
 fn center_panel(ui: &mut Ui, app: &mut App){
     ui.with_layout(Layout::bottom_up(Align::LEFT),|ui| {
-            ui.label(VERSION);
+        ui.label(VERSION);
         ui.label(format!("{}",app.debug_console_content));
     });
+    let mut new_logs = match &mut app.download_callback {
+        Some(callback) => {
+            match callback.poll_state() {
+                DataState::Updating(_)=> {
+                    let logs = callback.get_value();
+                    match logs {
+                        None => { None }
+                        Some(s) => {
+                            if s.len() < 1 {
+                                None
+                            } else {
+                                Some(s)
+                            }
+                        }
+                    }
+                }
+                _ => {None}
+            }
+        }
+        None => {
+            None
+        }
+    };
+    match new_logs {
+        None => {}
+        Some(logs) => {
+            app.debug_console_content.push_str(format!("{0}\n",logs.last().unwrap()).as_str());
+            match &mut app.download_callback {
+                Some(callback) => {
+                    let mut val = callback.get_value_mut();
+                    val = Some(&mut vec![]);
+                }
+                _ => {}
+            }
+        }
+    }
 
 }
 

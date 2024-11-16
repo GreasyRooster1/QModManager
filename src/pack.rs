@@ -39,13 +39,12 @@ pub fn download_modpack(app:&mut App, modpack: Modpack, minecraft_path: String,l
 }
 
 
-fn make_request_buffer_slice<T: DeserializeOwned + Debug + Send + 'static>(
+fn make_request_buffer_slice(
     url: &'static str,
-) -> LazyVecPromise<T> {
-    let updater = move |tx: Sender<Message<T>>| async move {
+) -> LazyVecPromise<String> {
+    let updater = move |tx: Sender<Message<String>>| async move {
         for i in 0..10 {
-            //basically a return
-            //send_data!(entry, tx);
+            send_data!(format!("Test log {i}"), tx);
             set_progress!(
                 Progress::from_fraction(i, 10),
                 tx
