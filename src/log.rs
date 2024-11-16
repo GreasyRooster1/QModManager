@@ -20,6 +20,12 @@ impl LogLevel{
     }
 }
 
+#[derive(Debug)]
+pub struct CallbackLog{
+    pub data:String,
+    pub id:u32,
+}
+
 pub fn log_message(message: String, level: LogLevel,app: &mut App){
     let date = Local::now().format("%Y-%m-%d %H:%M:%S");
     let content = format!("{0} : [{1}] - {2}\n", date, level.as_str(), message);

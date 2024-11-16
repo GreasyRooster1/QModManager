@@ -11,9 +11,10 @@ use std::sync::Mutex;
 use std::time::Duration;
 use lazy_async_promise::{send_data, set_finished, set_progress, unpack_result, LazyVecPromise, Message, Progress};
 use lazy_static::lazy_static;
+use rand::Rng;
 use crate::{App, Modpack};
 use crate::launch::LaunchSettings;
-use crate::log::{error, info};
+use crate::log::{error, info,CallbackLog};
 use reqwest::blocking;
 use tokio::sync::mpsc::Sender;
 
@@ -33,7 +34,16 @@ pub fn download_modpack(app:&mut App, modpack: Modpack, minecraft_path: String,l
 
     fs::write(Path::new(TEMP_DATA_PATH), format!("{}\n{}",url,minecraft_path)).unwrap();
 
-    app.download_callback = Some(make_request_buffer_slice("idk"));
+    let last_id = match app.prev_log_ids.len()<=0{
+        false => {
+            app.prev_log_ids[app.prev_log_ids.len() - 1]
+        }
+        true => {
+            0
+        }
+    };
+
+    app.download_callback = Some(make_request_buffer_slice("idk",last_id));
 
     Ok(())
 }
@@ -41,10 +51,14 @@ pub fn download_modpack(app:&mut App, modpack: Modpack, minecraft_path: String,l
 
 fn make_request_buffer_slice(
     url: &'static str,
-) -> LazyVecPromise<String> {
-    let updater = move |tx: Sender<Message<String>>| async move {
+    last_id: u32,
+) -> LazyVecPromise<CallbackLog> {
+    let updater = move |tx: Sender<Message<CallbackLog>>| async move {
         for i in 0..10 {
-            send_data!(format!("Test log {i}"), tx);
+            send_data!(CallbackLog{
+                data: format!("test log {}", i),
+                id: last_id+i,
+            }, tx);
             set_progress!(
                 Progress::from_fraction(i, 10),
                 tx

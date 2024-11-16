@@ -22,6 +22,7 @@ dependencies = [
  "lazy_static 1.5.0",
  "log",
  "prettytable-rs",
+ "rand 0.4.6",
  "reqwest",
  "rpassword",
  "rust-crypto",

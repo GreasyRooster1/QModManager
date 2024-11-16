@@ -17,7 +17,7 @@ use eframe::egui::Key::P;
 use lazy_async_promise::{DataState, DirectCacheAccess, LazyVecPromise, Progress, Promise};
 use lazy_static::lazy_static;
 use crate::launch::{launch, preform_launch_checks, verify_fml_folder, verify_minecraft_install, LaunchSettings};
-use crate::log::{error, info};
+use crate::log::{error, info, CallbackLog};
 use crate::pack::{download_modpack, setup_temp_folder};
 
 const WIDTH:f32  = 1000.;
@@ -91,7 +91,7 @@ impl Modpack {
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 struct App {
     update_callback_ctx: Option<egui::Context>,
-    download_callback:Option<LazyVecPromise<String>>,
+    download_callback:Option<LazyVecPromise<CallbackLog>>,
 
     game: Game,
 
@@ -108,6 +108,7 @@ struct App {
     auth_password:String,
     
     debug_console_content:String,
+    prev_log_ids:Vec<u32>,
 }
 
 impl Default for App {
@@ -125,6 +126,7 @@ impl Default for App {
             auth_username: "".to_string(),
             auth_password: "Mine2021!".to_string(),
             debug_console_content: "".to_string(),
+            prev_log_ids: vec![],
         }
     }
 }
@@ -267,13 +269,17 @@ fn center_panel(ui: &mut Ui, app: &mut App){
     match new_logs {
         None => {}
         Some(logs) => {
-            app.debug_console_content.push_str(format!("{0}\n",logs.last().unwrap()).as_str());
-            match &mut app.download_callback {
-                Some(callback) => {
-                    let mut val = callback.get_value_mut();
-                    val = Some(&mut vec![]);
+            let log = logs.last().unwrap();
+            if !app.prev_log_ids.contains(&log.id) {
+                app.debug_console_content.push_str(format!("{0}:{1}\n", log.data, log.id).as_str());
+                app.prev_log_ids.append(&mut vec![log.id]);
+                match &mut app.download_callback {
+                    Some(callback) => {
+                        let mut val = callback.get_value_mut();
+                        val = Some(&mut vec![]);
+                    }
+                    _ => {}
                 }
-                _ => {}
             }
         }
     }
