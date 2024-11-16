@@ -8,7 +8,7 @@ use directories::{BaseDirs, ProjectDirs};
 use log::info;
 use crate::{App, Modpack};
 use crate::log::{error, info, warn};
-use crate::pack::{download_modpack, download_thread};
+use crate::pack::{download_modpack};
 
 pub struct LaunchSettings{
     pub(crate) forge_version: String,
@@ -157,15 +157,16 @@ fn download_and_launch(app:&mut App, modpack: Modpack, minecraft_path: String, l
 
     fs::write(Path::new(crate::pack::TEMP_DATA_PATH), format!("{}\n{}", url, minecraft_path)).unwrap();
 
-    let handler = thread::spawn(|| {
-        match download_thread() {
-            Ok(_) => {
-                launch_client()
-            }
-            Err(err) => {
-            }
-        }
-    });
+    todo!();
+    // let handler = thread::spawn(|| {
+    //     match download_thread() {
+    //         Ok(_) => {
+    //             launch_client()
+    //         }
+    //         Err(err) => {
+    //         }
+    //     }
+    // });
 }
 
 fn launch_client() {

@@ -1,3 +1,4 @@
+use lazy_async_promise::DataState;
 use std::fmt::{format, Debug};
 use std::{fs, io};
 use std::error::Error;
@@ -6,7 +7,6 @@ use std::io::{Cursor, Write};
 use std::thread;
 use std::path::{Path, PathBuf};
 use std::str::Utf8Error;
-use std::sync::mpmc::Sender;
 use std::sync::Mutex;
 use std::time::Duration;
 use lazy_async_promise::{send_data, set_finished, set_progress, unpack_result, LazyVecPromise, Message, Progress};
@@ -15,6 +15,8 @@ use crate::{App, Modpack};
 use crate::launch::LaunchSettings;
 use crate::log::{error, info};
 use reqwest::blocking;
+use tokio::sync::mpsc::Sender;
+
 use serde::de::DeserializeOwned;
 use zip_extract::ZipExtractError;
 
@@ -31,7 +33,7 @@ pub fn download_modpack(app:&mut App, modpack: Modpack, minecraft_path: String,l
 
     fs::write(Path::new(TEMP_DATA_PATH), format!("{}\n{}",url,minecraft_path)).unwrap();
 
-
+    app.download_callback = Some(make_request_buffer_slice("idk"));
 
     Ok(())
 }
@@ -41,13 +43,11 @@ fn make_request_buffer_slice<T: DeserializeOwned + Debug + Send + 'static>(
     url: &'static str,
 ) -> LazyVecPromise<T> {
     let updater = move |tx: Sender<Message<T>>| async move {
-        let response = unpack_result!(reqwest::get(url).await, tx);
-        let entries: Vec<T> = unpack_result!(response.json().await, tx);
-        let total_entries = entries.len();
-        for (num, entry) in entries.into_iter().enumerate() {
-            send_data!(entry, tx);
+        for i in 0..10 {
+            //basically a return
+            //send_data!(entry, tx);
             set_progress!(
-                Progress::from_fraction(num as u32, total_entries as u32),
+                Progress::from_fraction(i, 10),
                 tx
             );
             tokio::time::sleep(Duration::from_millis(100)).await;

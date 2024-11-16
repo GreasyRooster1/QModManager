@@ -1,5 +1,5 @@
 #![feature(mpmc_channel)]
-#![windows_subsystem = "windows"]
+//#![windows_subsystem = "windows"]
 
 mod log;
 mod launch;
@@ -11,7 +11,8 @@ use winresource::WindowsResource;
 use std::process::Command;
 use std::sync::Mutex;
 use eframe::{egui, NativeOptions, WindowBuilderHook};
-use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerResponse, PopupCloseBehavior, Response, ScrollArea, SidePanel, TopBottomPanel, Ui, IconData, Layout, Align};
+use eframe::egui::{popup_below_widget, CentralPanel, DragValue, Id, InnerResponse, PopupCloseBehavior, Response, ScrollArea, SidePanel, TopBottomPanel, Ui, IconData, Layout, Align, ProgressBar};
+use lazy_async_promise::{LazyVecPromise, Progress, Promise};
 use lazy_static::lazy_static;
 use crate::launch::{launch, preform_launch_checks, verify_fml_folder, verify_minecraft_install, LaunchSettings};
 use crate::log::{error, info};
@@ -21,7 +22,7 @@ const WIDTH:f32  = 1000.;
 const HEIGHT:f32  = 700.;
 const VERSION:&str = "QModManager - V1.0.1";
 
-
+#[tokio::main]
 fn main() {
     match setup_temp_folder(){
         Ok(_)=>{}
@@ -88,6 +89,7 @@ impl Modpack {
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 struct App {
     update_callback_ctx: Option<egui::Context>,
+    download_callback:Option<LazyVecPromise<()>>,
 
     game: Game,
 
@@ -110,6 +112,7 @@ impl Default for App {
     fn default() -> Self {
         Self {
             update_callback_ctx: None,
+            download_callback: None,
             game: Game::Minecraft,
             modpack: Modpack::ModTeam,
             minecraft_version: "1.20.1".to_string(),
@@ -141,6 +144,9 @@ impl App {
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        let ctx_clone = ctx.clone();
+        self.update_callback_ctx = Some(ctx_clone);
+
         CentralPanel::default().show(ctx, |ui| {
             TopBottomPanel::top("top_panel")
                 .resizable(false)
@@ -287,10 +293,23 @@ fn right_panel(ui: &mut Ui, app: &mut App){
 
 fn bottom_panel(ui: &mut Ui, app: &mut App){
     ui.vertical_centered(|ui| {
-        if ui.button("LAUNCH").clicked() {
-            info("Launch button clicked",app);
-            let launch_settings = LaunchSettings::from_app(app);
-            launch(app,&launch_settings);
+        match &mut app.download_callback {
+            None => {
+                if ui.button("LAUNCH").clicked() {
+                    info("Launch button clicked", app);
+                    let launch_settings = LaunchSettings::from_app(app);
+                    launch(app, &launch_settings);
+                }
+            }
+            Some(callback) => {
+                let state = callback.poll_state();
+                let progress = state.get_progress().unwrap_or_else(|| { Progress::from_percent(0) });
+                ui.add(
+                    ProgressBar::new(progress.as_f32())
+                        .show_percentage()
+                        .animate(true)
+                );
+            }
         }
     });
 }
