@@ -1,14 +1,16 @@
+use lazy_async_promise::set_error;
 use lazy_async_promise::DataState;
 use std::fmt::{format, Debug};
 use std::{fs, io};
 use std::error::Error;
-use std::fs::remove_file;
+use std::fs::{remove_file, File};
 use std::io::{Cursor, Write};
 use std::thread;
 use std::path::{Path, PathBuf};
 use std::str::Utf8Error;
 use std::sync::Mutex;
 use std::time::Duration;
+use fs_extra::file;
 use lazy_async_promise::{send_data, set_finished, set_progress, unpack_result, LazyVecPromise, Message, Progress};
 use lazy_static::lazy_static;
 use rand::Rng;
@@ -43,27 +45,65 @@ pub fn download_modpack(app:&mut App, modpack: Modpack, minecraft_path: String,l
         }
     };
 
-    app.download_callback = Some(make_request_buffer_slice("idk",last_id));
+    app.download_callback = Some(make_request_buffer_slice(TEMP_DATA_PATH,last_id));
 
     Ok(())
 }
 
 
 fn make_request_buffer_slice(
-    url: &'static str,
+    file_path: &'static str,
     last_id: u32,
 ) -> LazyVecPromise<CallbackLog> {
     let updater = move |tx: Sender<Message<CallbackLog>>| async move {
-        for i in 0..10 {
+
+        //get data
+        let binding = file::read_to_string(file_path).unwrap();
+        let data = binding.split('\n').collect::<Vec<&str>>();
+        let url = data[0];
+        let mc_path = data[1];
+
+        //get metadata
+        let response = unpack_result!(reqwest::get(format!("{url}/metadata")).await, tx);
+        let text = unpack_result!(response.text().await,tx);
+        let files = text.split("\n").collect::<Vec<&str>>();
+        if files.len()==0 {
             send_data!(CallbackLog{
-                data: format!("test log {}", i),
-                id: last_id+i,
+                data: "no mods were found for this pack!".parse().unwrap(),
+                id: last_id,
+            }, tx);
+            set_finished!(tx);
+        }
+
+        let total_requests = (files.len()+1) as f64;
+
+        send_data!(CallbackLog{
+                data: format!("starting download for {0} files",files.len()),
+                id: last_id,
+            }, tx);
+        set_progress!(
+            Progress::from_fraction(1, total_requests),
+            tx
+        );
+
+        let mut c = 1;
+        for file in files {
+            if file=="" {
+                continue;
+            }
+            let response = unpack_result!(reqwest::get(format!("{url}/{file}")).await, tx);
+            let bytes = unpack_result!(response.bytes().await,tx);
+            let mut out_file = unpack_result!(File::create(format!("{mc_path}/mods/{file}")),tx);
+            unpack_result!(out_file.write_all(&bytes),tx);
+            send_data!(CallbackLog{
+                data: format!("downloaded file: {file}"),
+                id: last_id+c,
             }, tx);
             set_progress!(
-                Progress::from_fraction(i, 10),
+                Progress::from_fraction(c, total_requests),
                 tx
             );
-            tokio::time::sleep(Duration::from_millis(100)).await;
+            c+=1;
         }
         set_finished!(tx);
     };
