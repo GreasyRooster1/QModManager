@@ -23,7 +23,7 @@ const HEIGHT:f32  = 700.;
 const VERSION:&str = "QModManager - V1.0.1";
 
 #[tokio::main]
-fn main() {
+async fn main() {
     match setup_temp_folder(){
         Ok(_)=>{}
         Err(_)=>{}
@@ -303,16 +303,24 @@ fn bottom_panel(ui: &mut Ui, app: &mut App){
             }
             Some(callback) => {
                 let state = callback.poll_state();
-                let progress = state.get_progress().unwrap_or_else(|| { Progress::from_percent(0) });
-                ui.add(
-                    ProgressBar::new(progress.as_f32())
-                        .show_percentage()
-                        .animate(true)
-                );
+                let progress = state.get_progress();
+                if let Some(progress) = progress {
+                    ui.add(
+                        ProgressBar::new(progress.as_f32())
+                            .show_percentage()
+                            .animate(true)
+                    );
+                }else{
+                    if ui.button("RESET").clicked(){
+                        info("resetting back to launch state, this does not remove any mods",app);
+                        app.download_callback = None;
+                    }
+                }
             }
         }
     });
 }
+
 
 fn line_break(ui: &mut Ui) -> Response {
     ui.label("");
