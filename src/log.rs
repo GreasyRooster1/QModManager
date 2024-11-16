@@ -26,6 +26,11 @@ pub struct CallbackLog{
     pub id:u32,
 }
 
+pub fn format_message(message: String, level: LogLevel)->String{
+    let date = Local::now().format("%Y-%m-%d %H:%M:%S");
+    format!("{0} : [{1}] - {2}\n", date, level.as_str(), message)
+}
+
 pub fn log_message(message: String, level: LogLevel,app: &mut App){
     let date = Local::now().format("%Y-%m-%d %H:%M:%S");
     let content = format!("{0} : [{1}] - {2}\n", date, level.as_str(), message);

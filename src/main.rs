@@ -17,7 +17,7 @@ use eframe::egui::Key::P;
 use lazy_async_promise::{DataState, DirectCacheAccess, LazyVecPromise, Progress, Promise};
 use lazy_static::lazy_static;
 use crate::launch::{launch, preform_launch_checks, verify_fml_folder, verify_minecraft_install, LaunchSettings};
-use crate::log::{error, info, CallbackLog};
+use crate::log::{error, format_message, info, CallbackLog, LogLevel};
 use crate::pack::{download_modpack, setup_temp_folder};
 
 const WIDTH:f32  = 1000.;
@@ -271,7 +271,7 @@ fn center_panel(ui: &mut Ui, app: &mut App){
         Some(logs) => {
             let log = logs.last().unwrap();
             if !app.prev_log_ids.contains(&log.id) {
-                app.debug_console_content.push_str(format!("{0}:{1}\n", log.data, log.id).as_str());
+                app.debug_console_content.push_str(format_message(log.data.clone(),LogLevel::Info).as_str());
                 app.prev_log_ids.append(&mut vec![log.id]);
                 match &mut app.download_callback {
                     Some(callback) => {
