@@ -121,7 +121,7 @@ impl Default for App {
             minecraft_version: "1.20.1".to_string(),
             forge_version: "47.3.10".to_string(),
             is_cracked: false,
-            host_ip: "127.0.0.1".to_string(),
+            host_ip: "24.4.89.35".to_string(),
             host_port: 7878,
             auth_username: "".to_string(),
             auth_password: "Mine2021!".to_string(),
