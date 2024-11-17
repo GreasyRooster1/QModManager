@@ -45,6 +45,8 @@ pub fn download_modpack(app:&mut App, modpack: Modpack, minecraft_path: String,l
         }
     };
 
+
+
     app.download_callback = Some(make_request_buffer_slice(TEMP_DATA_PATH,last_id));
 
     Ok(())
@@ -62,6 +64,8 @@ fn make_request_buffer_slice(
         let data = binding.split('\n').collect::<Vec<&str>>();
         let url = data[0];
         let mc_path = data[1];
+
+        unpack_result!(clear_folder(format!("{0}/mods",data[1])),tx);
 
         //get metadata
         let response = unpack_result!(reqwest::get(format!("{url}/metadata")).await, tx);

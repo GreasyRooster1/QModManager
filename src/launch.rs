@@ -157,25 +157,29 @@ fn download_and_launch(app:&mut App, modpack: Modpack, minecraft_path: String, l
 
     fs::write(Path::new(crate::pack::TEMP_DATA_PATH), format!("{}\n{}", url, minecraft_path)).unwrap();
 
-    todo!();
-    // let handler = thread::spawn(|| {
-    //     match download_thread() {
-    //         Ok(_) => {
-    //             launch_client()
-    //         }
-    //         Err(err) => {
-    //         }
-    //     }
-    // });
+    match download_modpack(app,modpack,minecraft_path,launch_settings){
+        Ok(_) => {
+            info("Download complete, launching client...", app);
+            launch_client(app)
+        }
+        Err(_) => {
+            error("Failed to download modpack", app);
+        }
+    }
 }
 
-fn launch_client() {
+fn launch_client(app:&mut App) {
     match Command::new("C:\\Program Files (x86)\\Minecraft Launcher\\MinecraftLauncher.exe").spawn() {
-        Ok(_) => {}
+        Ok(_) => {
+            info("Found minecraft in the default install location", app);
+        }
         Err(_) => {
             match Command::new("G:\\Minecraft Launcher\\MinecraftLauncher.exe").spawn() {
-                Ok(_) => {}
+                Ok(_) => {
+                    info("Found minecraft in the G drive", app);
+                }
                 Err(_) => {
+                    error("Could not find minecraft launcher", app);
                     return;
                 }
             }

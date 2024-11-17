@@ -22,7 +22,7 @@ use crate::pack::{download_modpack, setup_temp_folder};
 
 const WIDTH:f32  = 1000.;
 const HEIGHT:f32  = 700.;
-const VERSION:&str = "QModManager - V1.0.1";
+const VERSION:&str = "QModManager - V2.0.0";
 
 #[tokio::main]
 async fn main() {
