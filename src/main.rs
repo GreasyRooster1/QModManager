@@ -1,5 +1,5 @@
 #![feature(mpmc_channel)]
-//#![windows_subsystem = "windows"]
+#![windows_subsystem = "windows"]
 
 mod log;
 mod launch;
